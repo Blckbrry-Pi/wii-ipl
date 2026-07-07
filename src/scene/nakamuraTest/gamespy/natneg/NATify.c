@@ -318,28 +318,28 @@ gsi_bool DetermineNatType(NAT * nat)
 		// What type of NAT is it?
 		if(!nat->ipRestricted && 
 		   !nat->portRestricted &&
-		   (abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
+		   (__abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
 		{
 			nat->natType = symmetric;
 			nat->promiscuity = promiscuous;
 		}
 		else if(nat->ipRestricted && 
 			    !nat->portRestricted && 
-			    (abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
+			    (__abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
 		{
 			nat->natType = symmetric;
 			nat->promiscuity = port_promiscuous;
 		}
 		else if(!nat->ipRestricted && 
 			    nat->portRestricted && 
-			    (abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
+			    (__abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
 		{
 			nat->natType = symmetric;
 			nat->promiscuity = ip_promiscuous;
 		}
 		else if(nat->ipRestricted && 
 			    nat->portRestricted && 
-				(abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
+				(__abs(nat->mappings[packet_map3].publicPort - nat->mappings[packet_map2].publicPort) >= 1))
 		{
 			nat->natType = symmetric;
 			nat->promiscuity = not_promiscuous;

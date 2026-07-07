@@ -6,10 +6,10 @@
 #define unk undefined
 
 namespace ipl {
-    namespace scene {
-        extern NCDAossConfig m_AOSSConfig;
-        extern NCDRakuApConfig m_RakuConfig;
-    }  // namespace scene
+    // namespace scene {
+    //     extern NCDAossConfig m_AOSSConfig;
+    //     extern NCDRakuApConfig m_RakuConfig;
+    // }  // namespace scene
     namespace ncd {
         class NCDSetting {
         public:

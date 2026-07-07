@@ -105,11 +105,24 @@ struct SOAddrInfo {
 int SOSocket(int pf, int type, int protocol);
 int SOClose(int s);
 
+int SOBind(u32 len, SOSockAddr*);
+
+int SOListen(int s, int backlog);
+int SOAccept(int s, SOSockAddr* backlog);
+
 int SOConnect(int s, void* sockAddr);
 
 int SORecv(int s, void* buf, int len, int flags);
-int SOSend(int s, void* buf, int len, int flags);
+int SORecvFrom(int s, void* buf, int len, int flags, SOSockAddr*);
+
+int SOSend(int s, const void* buf, int len, int flags);
+int SOSendTo(int s, const void* buf, int len, int flags, SOSockAddr* dest);
+
 int SOFcntl(int s, int cmd, ...);
+
+int SOPoll(SOPollFD* fd, int, s64 time);
+
+int SOGetSockName(int s, SOSockAddr* addr);
 
 int SOShutdown(int s, int how);
 

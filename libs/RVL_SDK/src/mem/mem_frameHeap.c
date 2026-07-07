@@ -111,7 +111,7 @@ u32 MEMGetAllocatableSizeForFrmHeapEx(MEMHeapHandle heap, int align) {
     MEMiFrmHeapHead* frmHeap;
     void* block;
 
-    align = abs(align);
+    align = __abs(align);
     enabled = OSDisableInterrupts();
     frmHeap = (MEMiFrmHeapHead*)AddU32ToPtr(heap, sizeof(MEMiHeapHead));
     block = MEM_PTR_ROUNDUP(frmHeap->head, align);

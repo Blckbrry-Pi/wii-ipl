@@ -78,6 +78,10 @@ void KPADDisableDPD(s32 chan);
 
 void KPADSetControlDpdCallback(s32 chan, KPADCallback* cb);
 
+WPADFSStatus* KPADGetWPADFSRingBuffer(s32 chan);
+WPADStatus* KPADGetWPADRingBuffer(s32 chan);
+WPADCLStatus* KPADGetWPADCLRingBuffer(s32 chan);
+
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

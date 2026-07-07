@@ -860,7 +860,7 @@ src/scene/setting/iplAPScanThread.cpp:
 	.text       start:0x813FC39C end:0x813FC520
 	.data       start:0x81657AA0 end:0x81657B08
 
-src/scene/setting/iplUSBAP.cpp:
+src/scene/setting/iplUSBAP.c:
 	.bss        start:0x810BC148 end:0x810BD498
 	.text       start:0x813FC520 end:0x813FC8FC
 	.data       start:0x81657B08 end:0x81657B18
@@ -892,11 +892,14 @@ src/scene/setting/iplRakuRakuThread.cpp:
 
 src/scene/setting/AOSS.c:
 	.bss        start:0x810BDEF8 end:0x810BECA0
-	.text       start:0x813FE27C end:0x814021BC
+	.text       start:0x813FE27C end:0x81401574
 	.data       start:0x81657C48 end:0x81657DB8
 	.sdata2     start:0x81694C78 end:0x81694C80
 	.sdata      start:0x81697200 end:0x81697218
 	.sbss       start:0x81698C70 end:0x81698C90
+
+src/scene/setting/AOSSOther.c:
+	.text       start:0x81401574 end:0x814021BC
 
 src/scene/setting/ATERM.c:
 	.bss        start:0x810BECA0 end:0x810C0C80

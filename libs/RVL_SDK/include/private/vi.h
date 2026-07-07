@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+void __VISetAdjustingValues(int hori, int vert);
+
 void __VISetRGBModeImm();
 void __VIResetRFIdle();
 void __VIResetSIIdle();

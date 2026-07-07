@@ -9,7 +9,7 @@ enum {
     NCD_MODE_NONE = 0,
     NCD_MODE_WEP40,
     NCD_MODE_WEP104,
-    NCD_MODE_INVALID3,
+    NCD_MODE_WEP2,
     NCD_MODE_WPA_PSK_TKIP,
     NCD_MODE_WPA2_PSK_TKIP,
     NCD_MODE_WPA_PSK_AES,
@@ -136,11 +136,6 @@ typedef struct NCDApConfig {
 
     NCDPrivacy privacy;  // 0x24
 } PACKED NCDApConfig;
-
-typedef struct NCDRakuApConfig {
-    NCDApConfig cfg;
-    u32 unk_0x6c;
-} NCDRakuApConfig;
 
 typedef struct NCDUsbapConfig {
     u16 nickname[11];  // 0x00

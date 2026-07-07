@@ -72,9 +72,12 @@ namespace ext_ead {
 
             u32 unk_0x0C;  // 0x0C
 
-            OSMutex mMutex;                  // 0x10
+            OSMutex mMutex;  // 0x10
+
+        public:
             BrowserThread* mpBrowserThread;  // 0x28
 
+        private:
             void* mpOperaThreadStack;  // 0x2C
             void* mpRSOBss;            // 0x30
             void* mpLibBuffer;         // 0x34

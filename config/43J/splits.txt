@@ -860,7 +860,7 @@ src/scene/setting/iplAPScanThread.cpp:
 	.text       start:0x813FB688 end:0x813FB80C
 	.data       start:0x81688380 end:0x816883E8
 
-src/scene/setting/iplUSBAP.cpp:
+src/scene/setting/iplUSBAP.c:
 	.bss        start:0x810BC148 end:0x810BD498
 	.text       start:0x813FB80C end:0x813FBBE8
 	.data       start:0x816883E8 end:0x816883F8

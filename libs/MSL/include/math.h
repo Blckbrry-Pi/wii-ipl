@@ -51,16 +51,7 @@ extern int __double_huge[];
 #define isinf(x) (fpclassify(x) == FP_INFINITE)
 #define isfinite(x) (fpclassify(x) > FP_INFINITE)
 
-// TODO: This inline loves regswapping. Stop it from doing that.
-/*
-inline int abs(int x) {
-#ifdef __MWERKS__
-    return __abs(x);
-#endif // __MWERKS__
-}
-*/
-
-#define abs __abs
+int abs(int x);
 long int labs(long n);
 inline double fabs(double x) {
 #ifdef __MWERKS__

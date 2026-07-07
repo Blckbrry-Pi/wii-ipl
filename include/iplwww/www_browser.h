@@ -199,6 +199,8 @@ namespace ext_ead {
             u32* GetRaster() { return mpRaster; }
             WWWHandle* GetHandle() { return mpBrowserHandle; }
 
+            void* GetWindow(int i) { return mpBrowserWindows[i]; }
+
         private:
             static BOOL SNotifyCallback_(WWWHandle* wwwBrowser, WWWHandlewindow* wwwWindow, WWWEvent event, WWWHandleEventData* eventData);
             BOOL NotifyCallback_(WWWHandle* wwwBrowser, WWWHandlewindow* wwwWindow, WWWEvent event, WWWHandleEventData* eventData);

@@ -11,6 +11,11 @@
 
 namespace ipl {
     namespace snd {
+        enum EAudioOutputMode {
+            EAUDIO_OUTPUT_MODE_STEREO = 0,
+            EAUDIO_OUTPUT_MODE_SURROUND,
+            EAUDIO_OUTPUT_MODE_MONO,
+        };
         class System {
         public:
             System();
@@ -47,6 +52,8 @@ namespace ipl {
             int resetAllSound();
 
             BOOL checkTmpSoundFile(void*, u32);
+
+            void setOutputMode(EAudioOutputMode newMode);
 
         private:
             u32 unk_0x00[0x638];
