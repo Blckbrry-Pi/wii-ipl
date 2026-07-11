@@ -331,72 +331,72 @@ namespace ipl {
             void waitFinish();
             bool isWaitPlaying();
 
-            u32 mNUPState;                              // 0x058
-            u8 unk_0x05C;                               // 0x05C
-            nand::SharedFile* pWwwlib;                  // 0x060
-            nand::File* pIplSetting;                    // 0x064
-            nand::File* pWwwArc;                        // 0x068
-            nand::SharedFile* pFontFile;                // 0x06C
-            nand::File* pBgTpl;                         // 0x070
-            s32 mSceneState;                            // 0x074
-            u32 mScanAPState;                           // 0x078
-            SetEulaState mSetEulaState;                 // 0x07C
-            SetUpdateState mSetUpdateState;             // 0x080
-            u32 mUsbApState;                            // 0x084
-            s32 unk_0x088;                              // 0x088
-            s32 unk_0x08C;                              // 0x08C
-            u32 mWiiSettingFlagMsgModified;             // 0x090
-            u32 unk_0x094;                              // 0x094
-            ESTitleId mTitleID;                         // 0x098
-            u32 mStartTick;                             // 0x0a0
-            SCOwnerNickname mOwnerNickname;             // 0x0a4
-            nand::LayoutFile* pLytFile;                 // 0x0bc
-            layout::Object* pLytSceenChange;            // 0x0c0
-            layout::Object* pLytMyAP;                   // 0x0c4
-            layout::Object* pLytWaiting;                // 0x0c8
-            layout::Animator* pLytSceenChangeR;         // 0x0cc
-            layout::Animator* pLytSceenChangeL;         // 0x0d0
-            ::gui::EventHandler* pApEvent;              // 0x0d4
-            ipl::gui::PaneManager* pGuiManager;         // 0x0d8
-            USBAPThread* pUsbApThread;                  // 0x0dc
-            AOSSThread* pAossThread;                    // 0x0e0
-            RakuRakuThread* pRakuRakuThread;            // 0x0e4
-            APScanThread* pAPScanThread;                // 0x0e8
-            BSSDescBuf mApBssDescriptorsBuf;            // 0x100
-            WDBssDesc* pBssDescriptors;                 // 0x900
-            void* pAPScanThreadStack;                   // 0x904
-            u32 unk_0x908;                              // 0x908
-            u16* pResultUSBAP;                          // 0x90c
-            u8* pUSBApBssDescriptorsBuf;                // 0x910
-            s32 apRelated_0x914;                        // 0x914
-            ApAnimIdx mApActiveAnim;                    // 0x918
-            u8 unk_0x91C;                               // 0x91C
-            u8 unk_0x91D;                               // 0x91D
-            bool unk_0x91E;                             // 0x91E
-            u8 unk_0x91F;                               // 0x91F
-            ext_ead::www::ImeData* pImeData;            // 0x920
-            www::wiisetting::WiiData* pWiiSettingData;  // 0x924
-            www::wiisetting::WiiFlag* pWiiSettingFlag;  // 0x928
-            u8 mFrameCounter;                           // 0x92c
-            u32 mSupportCode;                           // 0x930
-            www::wiisetting::SetStringBuf* pHtmlStr;    // 0x934
-            char mHtmlStrScratch[0x202];                // 0x938
-            u8 padding_0xB3A;                           // 0xB3A
-            u8 mBrowserCreated;                         // 0xB3B
-            keyboard::Manager::State mKbdMgrState;      // 0xB3C
-            s32 mStartId;                               // 0xB4C
-            BOOL mAspectRatio;                          // 0xB50
-            BOOL mProgressiveMode;                      // 0xB54
-            BOOL mEuRGB60Mode;                          // 0xB58
-            u8 unk_0xB5C;                               // 0xB5C
-            OSMessageQueue mQueue;                      // 0xB60
-            OSMessage mQueueBuf[5];                     // 0xB80
-            s32 unk_0xB94;                              // 0xB94
-            s32 mFadeFramesElapsed;                     // 0xB98
-            s32 unk_0xB9C;                              // 0xB9C
-            OSTime mFadeInStart;                        // 0xBA0
-            u32 mWpadConnectedMask;                     // 0aBA8
-            u8 unk_0xBAC;                               // 0xBAC
+            u32 mNUPState;                               // 0x058
+            u8 unk_0x05C;                                // 0x05C
+            nand::SharedFile* mpWwwlib;                  // 0x060
+            nand::File* mpIplSetting;                    // 0x064
+            nand::File* mpWwwArc;                        // 0x068
+            nand::SharedFile* mpFontFile;                // 0x06C
+            nand::File* mpBgTpl;                         // 0x070
+            s32 mSceneState;                             // 0x074
+            u32 mScanAPState;                            // 0x078
+            SetEulaState mSetEulaState;                  // 0x07C
+            SetUpdateState mSetUpdateState;              // 0x080
+            u32 mUsbApState;                             // 0x084
+            s32 unk_0x088;                               // 0x088
+            s32 unk_0x08C;                               // 0x08C
+            u32 mWiiSettingFlagMsgModified;              // 0x090
+            u32 unk_0x094;                               // 0x094
+            ESTitleId mTitleID;                          // 0x098
+            u32 mStartTick;                              // 0x0a0
+            SCOwnerNickname mOwnerNickname;              // 0x0a4
+            nand::LayoutFile* mpLytFile;                 // 0x0bc
+            layout::Object* mpLytSceenChange;            // 0x0c0
+            layout::Object* mpLytMyAP;                   // 0x0c4
+            layout::Object* mpLytWaiting;                // 0x0c8
+            layout::Animator* mpLytSceenChangeR;         // 0x0cc
+            layout::Animator* mpLytSceenChangeL;         // 0x0d0
+            ::gui::EventHandler* mpApEvent;              // 0x0d4
+            ipl::gui::PaneManager* mpGuiManager;         // 0x0d8
+            USBAPThread* mpUsbApThread;                  // 0x0dc
+            AOSSThread* mpAossThread;                    // 0x0e0
+            RakuRakuThread* mpRakuRakuThread;            // 0x0e4
+            APScanThread* mpAPScanThread;                // 0x0e8
+            BSSDescBuf mApBssDescriptorsBuf;             // 0x100
+            WDBssDesc* mpBssDescriptors;                 // 0x900
+            void* mpAPScanThreadStack;                   // 0x904
+            u32 unk_0x908;                               // 0x908
+            u16* mpResultUSBAP;                          // 0x90c
+            u8* mpBssDescriptorsBufUSBAP;                // 0x910
+            s32 apRelated_0x914;                         // 0x914
+            ApAnimIdx mApActiveAnim;                     // 0x918
+            u8 unk_0x91C;                                // 0x91C
+            u8 unk_0x91D;                                // 0x91D
+            bool unk_0x91E;                              // 0x91E
+            u8 unk_0x91F;                                // 0x91F
+            ext_ead::www::ImeData* mpImeData;            // 0x920
+            www::wiisetting::WiiData* mpWiiSettingData;  // 0x924
+            www::wiisetting::WiiFlag* mpWiiSettingFlag;  // 0x928
+            u8 mFrameCounter;                            // 0x92c
+            u32 mSupportCode;                            // 0x930
+            www::wiisetting::SetStringBuf* mpHtmlStr;    // 0x934
+            char msHtmlStrScratch[0x202];                // 0x938
+            u8 padding_0xB3A;                            // 0xB3A
+            u8 mBrowserCreated;                          // 0xB3B
+            keyboard::Manager::State mKbdMgrState;       // 0xB3C
+            s32 mStartId;                                // 0xB4C
+            BOOL mbAspectRatio;                          // 0xB50
+            BOOL mbProgressiveMode;                      // 0xB54
+            BOOL mbEuRGB60Mode;                          // 0xB58
+            u8 unk_0xB5C;                                // 0xB5C
+            OSMessageQueue mQueue;                       // 0xB60
+            OSMessage mQueueBuf[5];                      // 0xB80
+            s32 unk_0xB94;                               // 0xB94
+            s32 mFadeFramesElapsed;                      // 0xB98
+            s32 unk_0xB9C;                               // 0xB9C
+            OSTime mFadeInStart;                         // 0xBA0
+            u32 mWpadConnectedMask;                      // 0aBA8
+            u8 unk_0xBAC;                                // 0xBAC
 
             static void* mem1Buffer_;
             static void* mem2Buffer_;
@@ -404,15 +404,12 @@ namespace ipl {
 
         class APEvent : public ::gui::EventHandler {
         public:
-            APEvent(Setting* s) : setting(s) {}
+            APEvent(Setting* s) : mpSetting(s) {}
             virtual void onEvent(u32 compId, u32 event, void* data) override;
 
         private:
-            Setting* setting;
+            Setting* mpSetting;
         };
-
-        // extern const u16 scNumber[10];
-        // extern const u16 scNumber2[10];
     }  // namespace scene
 }  // namespace ipl
 

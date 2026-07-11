@@ -81,7 +81,7 @@ u32 ATERMi_threadIsRunning;
 void* ATERMi_threadStack;
 ATERMiFreeFn ATERMi_free;
 ATERMiAllocFn ATERMi_alloc;
-void (*ATERMi_progressCb)(ATERM_TimestampedState*);
+void (*ATERMi_progressCb)(ATERMStateUpdate*);
 s32 ATERMi_81698C94;
 s32 ATERMi_state;
 
@@ -144,17 +144,17 @@ inline void ATERMi_Wait(u32 ms) {
     OSReceiveMessage(&queueA, &msgDstA, 1);
 }
 
-inline void ATERMi_getStateInternal(ATERM_TimestampedState* state) {
+inline void ATERMi_getStateInternal(ATERMStateUpdate* state) {
     state->state = ATERMi_state;
     if (ATERMi_someTimeMs == -1) {
         state->timeDiff = -1;
     } else {
         state->timeDiff = ATERMi_someTimeMs - (int)OSTicksToMilliseconds(OSGetTime());
     }
-    state->unk_0x08 = ATERMi_81698C94;
+    state->isDone = ATERMi_81698C94;
 }
 inline void ATERMi_updateProgress(u32 newState, u32 newTime) {
-    ATERM_TimestampedState progress;
+    ATERMStateUpdate progress;
 
     ATERMi_state = newState;
     ATERMi_someTimeMs = newTime;
@@ -165,7 +165,7 @@ inline void ATERMi_updateProgress(u32 newState, u32 newTime) {
     } else {
         progress.timeDiff = ATERMi_someTimeMs - (int)OSTicksToMilliseconds(OSGetTime());
     }
-    progress.unk_0x08 = ATERMi_81698C94;
+    progress.isDone = ATERMi_81698C94;
     (ATERMi_progressCb)(&progress);
 }
 
@@ -489,7 +489,7 @@ int ATERMi_ScanForATERM() {
     ATERMiAAAAAAAA* scanData;
     int scanSize;
     u32 routerIdx;
-    ATERM_TimestampedState progressState;
+    ATERMStateUpdate progressState;
     char bssidHexStr[32];
     void* scanAllocation;
 
@@ -1091,12 +1091,12 @@ u32 ATERMi_DoAutoConfig() {
     int nowInMs;
 
     ATERMiMd5State local_b8;
-    ATERM_TimestampedState local_118;  // Timestamped state report
-    ATERM_TimestampedState local_124;  // Timestamped state report
-    ATERM_TimestampedState local_130;  // Timestamped state report
-    SOSockAddrIn local_138;            // Socket startup address
-    SOSockAddrIn local_140;            // Socket recv address
-    SOSockAddrIn local_150;            // Socket send address
+    ATERMStateUpdate local_118;  // Timestamped state report
+    ATERMStateUpdate local_124;  // Timestamped state report
+    ATERMStateUpdate local_130;  // Timestamped state report
+    SOSockAddrIn local_138;      // Socket startup address
+    SOSockAddrIn local_140;      // Socket recv address
+    SOSockAddrIn local_150;      // Socket send address
     SOSockAddrIn local_160;
     SOSockAddrIn local_168;
     u32 local_16c;  // Timestamp for md5
@@ -1134,7 +1134,7 @@ u32 ATERMi_DoAutoConfig() {
                 } else {
                     local_118.timeDiff = ATERMi_someTimeMs - (int)OSTicksToMilliseconds(OSGetTime());
                 }
-                local_118.unk_0x08 = ATERMi_81698C94;
+                local_118.isDone = ATERMi_81698C94;
                 (*ATERMi_progressCb)(&local_118);
                 ATERMi_configState = 2;
                 break;
@@ -1335,7 +1335,7 @@ u32 ATERMi_DoAutoConfig();
 void* ATERMi_AutoConfigThread(void* _) {
     u32 newState;
     u32 configureRes;
-    ATERM_TimestampedState state;
+    ATERMStateUpdate state;
 
     configureRes = ATERMi_DoAutoConfig();
     ATERMi_81698C94 = configureRes;
@@ -2308,10 +2308,10 @@ void ATERMi_WaitAlarmHandler(OSAlarm* alarm, OSContext* context) {
     OSSendMessage((OSMessageQueue*)alarm->tag, 0, 0);
 }
 
-int ATERMi_ApConfigStart(u32 priority, u32 param_2, void (*timeFn)(ATERM_TimestampedState*), ATERMiAllocFn alloc, ATERMiFreeFn free, u32 stackSize) {
+int ATERMi_ApConfigStart(u32 priority, u32 param_2, void (*timeFn)(ATERMStateUpdate*), ATERMiAllocFn alloc, ATERMiFreeFn free, u32 stackSize) {
     int iVar1;
     s64 sVar2;
-    ATERM_TimestampedState tsState;
+    ATERMStateUpdate tsState;
 
     if ((1 <= ATERMi_state) && (ATERMi_state <= 5)) {
         return -10;
@@ -2352,7 +2352,7 @@ int ATERMi_ApConfigEnd(void) {
     OSMessage msgBufA;
     OSMessage msgDstA;
 
-    ATERM_TimestampedState tsState;
+    ATERMStateUpdate tsState;
 
     OSMessageQueue queueB;
     OSMessageQueue queueA;
@@ -2383,7 +2383,7 @@ int ATERMi_ApConfigEnd(void) {
     return 1;
 }
 
-int ATERMi_ApConfigGetState(ATERM_TimestampedState* state) {
+int ATERMi_ApConfigGetState(ATERMStateUpdate* state) {
     ATERMi_getStateInternal(state);
     return 1;
 }

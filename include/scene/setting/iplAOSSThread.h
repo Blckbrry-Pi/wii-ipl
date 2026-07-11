@@ -26,21 +26,21 @@ namespace ipl {
 
         private:
             // SOAlloc
-            static void* fn_SOAlloc(u32, s32 size);
+            static void* SOAlloc(u32, s32 size);
             // SOFree
-            static void fn_SOFree(u32, void* ptr, s32);
+            static void SOFree(u32, void* ptr, s32);
             inline AOSSiConfig* getAOSSiCfg() { return &mAossCfg; }
 
-            int unk_0x32c;
+            int mAOSSErrno;
             int mPriority;
-            void* pThreadStack;
-            void* pHeapMem;
-            MEMHeapHandle mHeapHandle;
+            void* mpThreadStack;
+            void* mpHeapMem;
+            MEMHeapHandle mpHeap;
             AOSSiConfig mAossCfg;
 
-            static s32 startTimeHi;
-            static u32 startTimeLo;
-            static u32 sbss_0x8;
+            static s32 smStartTimeHi;
+            static u32 smStartTimeLo;
+            static BOOL smIsStarted;
         };
     }  // namespace scene
 }  // namespace ipl

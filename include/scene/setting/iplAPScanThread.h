@@ -19,7 +19,7 @@ namespace ipl {
 
         private:
             WDScanParam mScanParams;
-            u16* pBssDescriptorsResultData;
+            u16* mpBssDescriptorsResultData;
         };
     }  // namespace scene
 }  // namespace ipl

@@ -9,14 +9,14 @@ namespace ipl {
         APScanThread::~APScanThread() {
         }
         void* APScanThread::Run() {
-            int scanOnceRet = WDScanOnce((u8*)pBssDescriptorsResultData, 0x800, &mScanParams);
+            int scanOnceRet = WDScanOnce((u8*)mpBssDescriptorsResultData, 0x800, &mScanParams);
             if (scanOnceRet != 0) {
                 OSReport("ERROR(%d): UpdateScanInfo\n", scanOnceRet);
             }
             // @bug this should return something
         }
         void APScanThread::setResultData(u16* resultData) {
-            pBssDescriptorsResultData = resultData;
+            mpBssDescriptorsResultData = resultData;
             setParam();
         }
         void APScanThread::setParam() {

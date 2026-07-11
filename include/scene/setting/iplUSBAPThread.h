@@ -17,7 +17,7 @@ namespace ipl {
             static void callback();
 
         private:
-            wchar_t mNickname[10];
+            wchar_t msNickname[10];
         };
     }  // namespace scene
 }  // namespace ipl

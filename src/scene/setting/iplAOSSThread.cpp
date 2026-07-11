@@ -14,25 +14,25 @@
 namespace ipl {
     namespace scene {
         static MEMAllocator m_allocator;
-        s32 AOSSThread::startTimeHi;
-        u32 AOSSThread::startTimeLo;
-        u32 AOSSThread::sbss_0x8;
+        s32 AOSSThread::smStartTimeHi;
+        u32 AOSSThread::smStartTimeLo;
+        BOOL AOSSThread::smIsStarted;
 
         AOSSThread::AOSSThread(EGG::Heap* heap) {
-            mHeapHandle = 0;
-            sbss_0x8 = 0;
-            pHeapMem = heap->alloc(0x40000, 0x20);
-            pThreadStack = heap->alloc(0x1000, 0x20);
+            mpHeap = 0;
+            smIsStarted = 0;
+            mpHeapMem = heap->alloc(0x40000, 0x20);
+            mpThreadStack = heap->alloc(0x1000, 0x20);
         }
         void AOSSThread::destroy(int) {
-            if ((sbss_0x8 != 0) && IsThreadTerminated()) {
+            if ((smIsStarted != 0) && IsThreadTerminated()) {
                 WaitForThreadExit();
                 SOFinish();
-                sbss_0x8 = 0;
+                smIsStarted = 0;
             }
-            if (mHeapHandle != NULL) {
-                MEMDestroyExpHeap(mHeapHandle);
-                mHeapHandle = NULL;
+            if (mpHeap != NULL) {
+                MEMDestroyExpHeap(mpHeap);
+                mpHeap = NULL;
             }
         }
         AOSSThread::~AOSSThread() {
@@ -40,30 +40,30 @@ namespace ipl {
         }
 
         bool AOSSThread::start() {
-            if (sbss_0x8) {
+            if (smIsStarted) {
                 return false;
             } else {
                 SOLibraryConfig soLibConf;
-                soLibConf.alloc = fn_SOAlloc;
-                soLibConf.free = fn_SOFree;
+                soLibConf.alloc = SOAlloc;
+                soLibConf.free = SOFree;
 
                 BOOL level = OSDisableInterrupts();
                 s64 time = OSGetTime();
-                startTimeHi = time >> 32;
-                startTimeLo = time;
-                mHeapHandle = MEMCreateExpHeapEx(pHeapMem, 0x40000, 2);
-                MEMInitAllocatorForExpHeap(&m_allocator, mHeapHandle, 0x20);
+                smStartTimeHi = time >> 32;
+                smStartTimeLo = time;
+                mpHeap = MEMCreateExpHeapEx(mpHeapMem, 0x40000, 2);
+                MEMInitAllocatorForExpHeap(&m_allocator, mpHeap, 0x20);
                 mPriority = OSGetThreadPriority(OSGetCurrentThread()) - 2;
-                sbss_0x8 = 1;
+                smIsStarted = 1;
                 SOInit(&soLibConf);
-                memset(pThreadStack, 0, 4);
-                Create(pThreadStack, 0x1000, mPriority);
+                memset(mpThreadStack, 0, 4);
+                Create(mpThreadStack, 0x1000, mPriority);
                 OSRestoreInterrupts(level);
                 return true;
             }
         }
 
-        void* AOSSThread::fn_SOAlloc(u32, s32 size) {
+        void* AOSSThread::SOAlloc(u32, s32 size) {
             void* ptr;
             BOOL level;
             level = OSDisableInterrupts();
@@ -71,16 +71,16 @@ namespace ipl {
             OSRestoreInterrupts(level);
             return ptr;
         }
-        void AOSSThread::fn_SOFree(u32, void* ptr, s32) {
+        void AOSSThread::SOFree(u32, void* ptr, s32) {
             BOOL level = OSDisableInterrupts();
             MEMFreeToAllocator(&m_allocator, ptr);
             OSRestoreInterrupts(level);
         }
 
         void* AOSSThread::Run() {
-            unk_0x32c = 0xf;
+            mAOSSErrno = 0xf;
             AOSS_SetCallback((AOSSiCallback)USBAPThread::callback);
-            if (AOSSi_InitLocal(fn_SOAlloc, fn_SOFree) == -1) {
+            if (AOSSi_InitLocal(SOAlloc, SOFree) == -1) {
                 return this;
             } else {
                 memset(&mAossCfg, 0, 0x26c);
@@ -96,15 +96,15 @@ namespace ipl {
                 mAossCfg.productInfo.dataLen = 4;
 
                 NETGetWirelessMacAddress(&mAossCfg.macAddr);
-                ((u32*)pThreadStack)[0xff0] = 0x97654321;
-                unk_0x32c = AOSSi_Init(&mAossCfg);
+                ((u32*)mpThreadStack)[0xff0] = 0x97654321;
+                mAOSSErrno = AOSSi_Init(&mAossCfg);
                 AOSSi_EndLocal();
                 OSCheckActiveThreads();
                 return this;
             }
         }
         bool AOSSThread::cancel() {
-            if (sbss_0x8 == 0) {
+            if (smIsStarted == 0) {
                 return false;
             } else {
                 BOOL level = OSDisableInterrupts();
@@ -114,14 +114,14 @@ namespace ipl {
             }
         }
         bool AOSSThread::finish(NCDAossConfig* cfgOut, int* result) {
-            if (sbss_0x8 == 0) {
+            if (smIsStarted == 0) {
                 *result = -99;
                 return true;
             } else {
                 if (IsThreadTerminated()) {
                     destroy(0);
                 } else {
-                    if (OSTicksToMilliseconds((u32)OSGetTime() - startTimeLo) >= 90 * 1000) {
+                    if (OSTicksToMilliseconds((u32)OSGetTime() - smStartTimeLo) >= 90 * 1000) {
                         BOOL level = OSDisableInterrupts();
                         AOSSi_Cancel();
                         OSRestoreInterrupts(level);
@@ -129,7 +129,7 @@ namespace ipl {
                     return 0;
                 }
                 {
-                    if (unk_0x32c == 0) {
+                    if (mAOSSErrno == 0) {
                         BOOL level = OSDisableInterrupts();
                         AOSSiWirelessSettings* wireless = &mAossCfg.wirelessSettings;
                         if ((mAossCfg.mode & 1) == 1) {
@@ -176,7 +176,7 @@ namespace ipl {
                         }
                         printInfo();
                         OSRestoreInterrupts(level);
-                    } else if (unk_0x32c == -2) {
+                    } else if (mAOSSErrno == -2) {
                         *result = -98;
                     }
                     *result = mAossCfg.aossResult;

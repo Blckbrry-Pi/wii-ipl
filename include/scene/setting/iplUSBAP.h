@@ -7,11 +7,6 @@
 
 typedef void (*USBAPRegisterCallbackFn)(int);
 
-typedef struct {
-    u8 counter;
-    u8 bssids[20][6];
-} USBAP_UnkBuffer;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

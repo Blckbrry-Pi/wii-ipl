@@ -24,7 +24,7 @@ namespace ipl {
 
         void USBAPThread::Init(u16* result, u8* statePtr) {
             int newPriority = OSGetThreadPriority(OSGetCurrentThread()) + 1;
-            if (USBAPStartRegistration(0, newPriority, FALSE, mNickname, USBAPRegisterCallback, result, statePtr) == TRUE) {
+            if (USBAPStartRegistration(0, newPriority, FALSE, msNickname, USBAPRegisterCallback, result, statePtr) == TRUE) {
                 OSReport("Registration started\n");
             }
         }
@@ -39,8 +39,8 @@ namespace ipl {
 
         void USBAPThread::setData(const wchar_t* text, u8* data) {
             usbapState = data;
-            memcpy(mNickname, text, sizeof(mNickname));
-            utility::CharacterCode::changeEndian(mNickname, 10);
+            memcpy(msNickname, text, sizeof(msNickname));
+            utility::CharacterCode::changeEndian(msNickname, 10);
         }
 
         void USBAPThread::callback() {

@@ -21,6 +21,11 @@ static u8* usbapResultBuf;
 static u8* usbapBSSIDBuf;
 u8* usbapState;
 
+typedef struct {
+    u8 counter;
+    u8 bssids[20][6];
+} USBAPBSSIDBuf;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -145,14 +150,14 @@ static void* DoRegistration(void* __unused_args) {
                 continue;
 
             for (j = 0; j < 20; j++) {
-                if (memcmp(next->bssid, offsetof(USBAP_UnkBuffer, bssids[j]) + usbapBSSIDBuf, 6) == 0)
+                if (memcmp(next->bssid, offsetof(USBAPBSSIDBuf, bssids[j]) + usbapBSSIDBuf, 6) == 0)
                     break;
             }
             if (j != 20)
                 continue;
 
             if (next->ssid[9] == 0x01) {
-                memcpy(usbapBSSIDBuf + offsetof(USBAP_UnkBuffer, bssids[*usbapBSSIDBuf]), next->bssid, 6);
+                memcpy(usbapBSSIDBuf + offsetof(USBAPBSSIDBuf, bssids[*usbapBSSIDBuf]), next->bssid, 6);
                 foundMatchingSSID = TRUE;
                 (*usbapBSSIDBuf)++;
             } else if (next->ssid[9] == 0x00) {
