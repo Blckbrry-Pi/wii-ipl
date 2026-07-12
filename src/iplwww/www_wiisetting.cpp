@@ -205,7 +205,7 @@ namespace www {
                         val->data.jsObj = ipl::ncd::NCDSetting::getMacAddr();
                         break;
                     }
-                    case LAN_MAC_ADDR: {
+                    case FORM_ID_LAN_MAC_ADDR: {
                         val->data.jsStr = ipl::socket::SocketSetting::getLANMacAddrUtf8();
                         break;
                     }

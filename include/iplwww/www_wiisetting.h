@@ -38,7 +38,7 @@ namespace www {
             FORM_ID_PARENTAL_SEC_ANSWER,
             FORM_ID_PARENTAL_RE_SEC_ANSWER,
             FORM_ID_MASTER_KEY,
-            LAN_MAC_ADDR,
+            FORM_ID_LAN_MAC_ADDR,
             FORM_ID_DUMMY_SECURITY_KEY,
             FORM_ID_VERSION,
             FORM_ID_DIRECT_URL,
@@ -63,8 +63,8 @@ namespace www {
             WB_ID_DATE,                 // Day of month
             WB_ID_HOUR,                 // Hour (0 to 23 inclusive)
             WB_ID_MINUTE,               // Minute
-            WB_ID_FORM_ID,              // TODO: What is this?
-            WB_ID_PAGE_ID,              // TODO: What is this?
+            WB_ID_FORM_ID,              // The ID of the text box that's being entered into
+            WB_ID_PAGE_ID,              // The ID of the current page
             WB_ID_MESSAGE,              // TODO: What is this?
             WB_ID_TYPE,                 // TODO: What is this?
             WB_ID_CONNECT_TYPE,         // NCD "this connection" flag

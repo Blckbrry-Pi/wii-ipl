@@ -36,7 +36,7 @@
 
 namespace ipl {
     namespace scene {
-#if defined(VESION_43U)
+#if defined(VERSION_43U)
 #define SETTING_ARC_SUBFOLDER "US2"
 #elif defined(VERSION_43E)
 #define SETTING_ARC_SUBFOLDER "EU2"
@@ -1657,8 +1657,16 @@ namespace ipl {
             memset(msHtmlStrScratch, 0, sizeof(msHtmlStrScratch));
 
             u32 stringLimit;
+
+            // Genuinely, wtf
+#if defined(VERSION_43U) | defined(VERSION_43E)
             u32 rowLimit;
             keyboard::Manager::KeyboardType kbdType;
+#else
+            keyboard::Manager::KeyboardType kbdType;
+            u32 rowLimit;
+#endif
+
             bool shouldZero;
             int prodArea;
 
@@ -1738,7 +1746,7 @@ namespace ipl {
                     kbdType = keyboard::Manager::ONLY_QWERTY_WITHOUT_LINEFEED_AND_SIGN;
             }
             u32 formID = mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID];
-            if (formID != 0x0d && formID != 0x02 && formID != 0x12 && formID != 0x13 && formID != 0x16) {
+            if (formID != www::wiisetting::FORM_ID_PROXY_BASIC_PASSWORD && formID != 0x02 && formID != 0x12 && formID != 0x13 && formID != 0x16) {
                 utility::CharacterCode::UTF8ToUTF16((wchar_t*)msHtmlStrScratch, utf8Str, sizeof(msHtmlStrScratch) >> 1);
             }
 
@@ -1762,7 +1770,6 @@ namespace ipl {
                 case www::wiisetting::FORM_ID_MASTER_KEY:
                 case www::wiisetting::FORM_ID_DUMMY_SECURITY_KEY:
                     shouldZero = checkInputString((wchar_t*)msHtmlStrScratch);
-
                     break;
 
                 case www::wiisetting::FORM_ID_IP_ADDR:
@@ -1801,7 +1808,7 @@ namespace ipl {
             } else {
                 System::getKeyboard()->memoMgr()->setTitleText(L"");
             }
-            if (mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID] == 0x11) {
+            if (mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID] == www::wiisetting::FORM_ID_PARENTAL_JUDGE_PASS) {
                 System::getKeyboard()->memoMgr()->setSecretInputMode(true);
             }
         }
@@ -1878,13 +1885,13 @@ namespace ipl {
                         if (strlen(str) == 0) {
                             str[0] = '\0';
                             ::ext_ead::www::SurfaceManager::GetInstance()->GetBrowserThread()->CommitIme(mpImeData, str);
-                            memset(mpHtmlStr->asterisks, 0, 0x42);
+                            memset(mpHtmlStr->asterisks, 0, sizeof(mpHtmlStr->asterisks));
                         } else {
                             if ((mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID] == www::wiisetting::FORM_ID_SECURITY_KEY) ||
                                 (mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID] == www::wiisetting::FORM_ID_DUMMY_SECURITY_KEY)) {
                                 int i = 0;
                                 memcpy(mpHtmlStr->asterisks, mpHtmlStr->securityKey, 0x41);
-                                mpHtmlStr->asterisks[0x41] = '\0';
+                                mpHtmlStr->asterisks[sizeof(mpHtmlStr->asterisks) - 1] = '\0';
 
                                 for (; mpHtmlStr->asterisks[i]; i++) {
                                     mpHtmlStr->asterisks[i] = '*';
@@ -1972,7 +1979,7 @@ namespace ipl {
                 case keyboard::Manager::STATE_APPEARING:
                     switch (mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID]) {
                         case www::wiisetting::FORM_ID_MAC_ADDR:
-                        case www::wiisetting::LAN_MAC_ADDR:
+                        case www::wiisetting::FORM_ID_LAN_MAC_ADDR:
                         default:
                             break;
 
@@ -2256,7 +2263,7 @@ namespace ipl {
         }
         void Setting::setNickName() {
             mOwnerNickname.length = wcslen((wchar_t*)msHtmlStrScratch);
-            if ((checkTextNum(mpHtmlStr->nickname) & 0xff) == 3) {
+            if ((u8)checkTextNum(mpHtmlStr->nickname) == 3) {
                 memset(mOwnerNickname.name, 0, sizeof(mOwnerNickname.name));
                 memcpy(mOwnerNickname.name, msHtmlStrScratch, mOwnerNickname.length * sizeof(wchar_t));
                 OSReport("nicknameFlag:1 %d %s\n", (bool)SCSetOwnerNickName(&mOwnerNickname), mOwnerNickname.name);
@@ -2344,13 +2351,13 @@ namespace ipl {
         }
         void Setting::setMTU() {
             u32 mtuInt;
-            wchar_t mutBuf[6];
+            wchar_t mtuBuf[6];
             char* mtuRef;
 
             mtuRef = mpHtmlStr->adjMtu;
-            memset(mutBuf, 0, 0xc);
-            utility::CharacterCode::UTF8ToUTF16(mutBuf, mtuRef, 6);
-            utility::CharacterCode::UTF16ToU32(&mtuInt, mutBuf);
+            memset(mtuBuf, 0, sizeof(mtuBuf));
+            utility::CharacterCode::UTF8ToUTF16(mtuBuf, mtuRef, 6);
+            utility::CharacterCode::UTF16ToU32(&mtuInt, mtuBuf);
 
             int mtu = mtuInt & 0xffff;
             if (mtu < 0x240 || mtu > 1500)
@@ -2364,7 +2371,7 @@ namespace ipl {
 
             memset(passBuf, 0, sizeof(passBuf));
             utility::CharacterCode::UTF8ToANSI((u8*)passBuf, mpHtmlStr->parentalPass);
-            if ((checkTextNum(passBuf) & 0xff) == 3) {
+            if ((u8)checkTextNum(passBuf) == 3) {
                 parental::Parental::setPass(passBuf);
             }
             memset(mpHtmlStr->parentalPass, 0, sizeof(mpHtmlStr->parentalPass));
@@ -2376,7 +2383,7 @@ namespace ipl {
             memset(rePassBuf, 0, sizeof(rePassBuf));
             funcResult = 2;
             utility::CharacterCode::UTF8ToANSI((u8*)rePassBuf, mpHtmlStr->parentalRePass);
-            if ((checkTextNum(rePassBuf) & 0xff) == 3) {
+            if ((u8)checkTextNum(rePassBuf) == 3) {
                 if (parental::Parental::checkPass(rePassBuf)) {
                     funcResult = 1;
                 }
@@ -2391,7 +2398,7 @@ namespace ipl {
             memset(judgePassBuf, 0, sizeof(judgePassBuf));
             funcResult = 2;
             utility::CharacterCode::UTF8ToANSI((u8*)judgePassBuf, mpHtmlStr->parentalJudgePass);
-            if ((checkTextNum(judgePassBuf) & 0xff) == 3) {
+            if ((u8)checkTextNum(judgePassBuf) == 3) {
                 if (parental::Parental::judgePass(judgePassBuf)) {
                     funcResult = 1;
                 }
@@ -2403,7 +2410,7 @@ namespace ipl {
             memset(msHtmlStrScratch, 0, sizeof(msHtmlStrScratch));
             utility::CharacterCode::UTF8ToUTF16((wchar_t*)msHtmlStrScratch, mpHtmlStr->parentalSecA, 0x44);
             reAdjustSecA();
-            if ((checkTextNum(NULL) & 0xff) == 3) {
+            if ((u8)checkTextNum(NULL) == 3) {
                 parental::Parental::setSecA((wchar_t*)msHtmlStrScratch);
             }
             memset(msHtmlStrScratch, 0, sizeof(msHtmlStrScratch));
@@ -2415,7 +2422,7 @@ namespace ipl {
             memset(msHtmlStrScratch, 0, sizeof(msHtmlStrScratch));
             utility::CharacterCode::UTF8ToUTF16((wchar_t*)msHtmlStrScratch, mpHtmlStr->parentalReSecA, 0x44);
             reAdjustSecA();
-            if ((checkTextNum(NULL) & 0xff) == 3) {
+            if ((u8)checkTextNum(NULL) == 3) {
                 if (parental::Parental::judgeSecA((wchar_t*)msHtmlStrScratch)) {
                     funcResult = 1;
                 }
@@ -2428,7 +2435,7 @@ namespace ipl {
             u8 funcResult;
             memset(masterKeyBuf, 0, sizeof(masterKeyBuf));
             funcResult = 2;
-            if ((checkTextNum(mpHtmlStr->masterKey) & 0xff) == '\x03') {
+            if ((u8)checkTextNum(mpHtmlStr->masterKey) == 3) {
                 utility::CharacterCode::UTF8ToANSI((u8*)masterKeyBuf, mpHtmlStr->masterKey);
                 if (parental::Parental::judgeMaster(masterKeyBuf)) {
                     funcResult = 1;
@@ -2567,10 +2574,16 @@ namespace ipl {
         }
         void Setting::adjustSecA(wchar_t* buf) {
             wchar_t scratch[0x18];
-            int i;
-            bool sawNonAscii;
+            int i = 0;
 
-            for (i = 0, sawNonAscii = false; buf[i] != 0; i++) {
+            // Korean will never be treated as ascii-only
+#if defined(VERSION_43K)
+            bool sawNonAscii = true;
+#else
+            bool sawNonAscii = false;
+#endif
+
+            for (; buf[i] != 0; i++) {
                 if (buf[i] > 0x7f) {
                     sawNonAscii = true;
                     break;
@@ -2585,7 +2598,14 @@ namespace ipl {
         void Setting::reAdjustSecA() {
             char scratchSpace[0x24];
             int i = 0;
+
+            // Korean will never be treated as ascii-only
+#if defined(VERSION_43K)
+            bool hasMultiCharSymbol = true;
+#else
             bool hasMultiCharSymbol = false;
+#endif
+
             while (((wchar_t*)msHtmlStrScratch)[i] != 0) {
                 if (((wchar_t*)msHtmlStrScratch)[i] > 0x7f) {
                     hasMultiCharSymbol = true;
@@ -2602,64 +2622,64 @@ namespace ipl {
         void Setting::setDefaultBackString() {
             switch (mpWiiSettingData->data[www::wiisetting::WB_ID_FORM_ID]) {
                 case www::wiisetting::FORM_ID_NICKNAME:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x15c));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_WII_NICKNAME));
                     break;
                 case www::wiisetting::FORM_ID_SECURITY_KEY:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x153));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_KEY));
                     break;
                 case www::wiisetting::FORM_ID_SSID:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x152));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_SSID));
                     break;
                 case www::wiisetting::FORM_ID_IP_ADDR:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x14d));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_IPADDR));
                     break;
                 case www::wiisetting::FORM_ID_IP_NETMASK:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x150));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_NETMASK));
                     break;
                 case www::wiisetting::FORM_ID_IP_GATEWAY:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x151));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_GATEWAY));
                     break;
                 case www::wiisetting::FORM_ID_DNS1:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x14e));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_DNS1));
                     break;
                 case www::wiisetting::FORM_ID_DNS2:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x14f));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_DNS2));
                     break;
                 case www::wiisetting::FORM_ID_PROXY_SERVER:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x154));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_PROXY_SERVER_NAME));
                     break;
                 case www::wiisetting::FORM_ID_PROXY_PORT:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x155));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_PROXY_PORT));
                     break;
                 case www::wiisetting::FORM_ID_PROXY_BASIC_USERNAME:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x156));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_PROXY_USERNAME));
                     break;
                 case www::wiisetting::FORM_ID_PROXY_BASIC_PASSWORD:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x157));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_PROXY_PASSWORD));
                     break;
                 case www::wiisetting::FORM_ID_ADJ_MTU:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x158));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_MTU));
                     break;
                 case www::wiisetting::FORM_ID_PARENTAL_PASS:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x159));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_PARENTAL_PIN));
                     break;
                 case www::wiisetting::FORM_ID_PARENTAL_RE_PASS:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x159));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_PARENTAL_PIN));
                     break;
                 case www::wiisetting::FORM_ID_PARENTAL_JUDGE_PASS:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x159));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_PARENTAL_PIN));
                     break;
                 case www::wiisetting::FORM_ID_PARENTAL_SEC_ANSWER:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x15a));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_PARENTAL_SECA));
                     break;
                 case www::wiisetting::FORM_ID_PARENTAL_RE_SEC_ANSWER:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x15a));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_PARENTAL_SECA));
                     break;
                 case www::wiisetting::FORM_ID_MASTER_KEY:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x15b));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_MASTER_KEY));
                     break;
                 case www::wiisetting::FORM_ID_DUMMY_SECURITY_KEY:
-                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(0x153));
+                    System::getKeyboard()->baseMgr()->setTitleText(System::getMessage(MESG_SETTINGS_ENTER_NET_KEY));
                     break;
             }
         }
@@ -3508,7 +3528,8 @@ namespace ipl {
         }
 
         u32 Setting::getErrorNum() {
-            if ((u32)System::getRegion() != SC_PRODUCT_AREA_EUR) {
+            u32 region = System::getRegion();
+            if (region != SC_PRODUCT_AREA_EUR) {
                 if (mpWiiSettingFlag->err == 32001) {
                     return MESG_ERROR_UPD_SERVER;
                 } else if (mpWiiSettingFlag->err == 32002) {
@@ -3532,7 +3553,7 @@ namespace ipl {
                 } else if (mpWiiSettingFlag->err < 51100) {
                     return MESG_ERROR_NCD_WL_INVALID;
                 } else if (mpWiiSettingFlag->err < 51400) {
-                    return MESG_ERROR_NWC24_NETWORK_NO_EUR;
+                    return MESG_ERROR_NWC24_NETWORK_A;
                 } else if (mpWiiSettingFlag->err < 51500) {
                     return MESG_ERROR_INTERNET_ERROR_1;
                 } else if (mpWiiSettingFlag->err < 52100) {
@@ -3574,7 +3595,7 @@ namespace ipl {
                 } else if (mpWiiSettingFlag->err < 51040) {
                     return MESG_ERROR_NCD_WL_INVALID_EUR;
                 } else if (mpWiiSettingFlag->err < 51050) {
-                    return 0x1b8;
+                    return MESG_ERROR_WIFI_USB_NOT_FOUND_EUR;
                 } else if (mpWiiSettingFlag->err < 51100) {
                     return MESG_ERROR_NCD_WL_INVALID_EUR;
                 } else if (mpWiiSettingFlag->err < 51400) {
@@ -3589,27 +3610,27 @@ namespace ipl {
                     return MESG_ERROR_SERVER_UNREACHABLE_1_EUR;
                 } else if (mpWiiSettingFlag->err < 52500) {
                     return MESG_ERROR_PROXY_UNREACHABLE_EUR;
-                } else if (mpWiiSettingFlag->err < 0xcd78) {
+                } else if (mpWiiSettingFlag->err < 52600) {
                     return MESG_ERROR_UNAME_PASSWORD_EUR;
-                } else if (mpWiiSettingFlag->err < 0xcddc) {
+                } else if (mpWiiSettingFlag->err < 52700) {
                     return MESG_ERROR_SERVER_UNREACHABLE_2_EUR;
-                } else if (mpWiiSettingFlag->err < 0xce40) {
+                } else if (mpWiiSettingFlag->err < 52800) {
                     return MESG_ERROR_IP_COLLISION_EUR;
                 } else if (mpWiiSettingFlag->err < 55000) {
                     return MESG_ERROR_NETWORK_DISCONNECT_EUR;
                 } else if (mpWiiSettingFlag->err > 100000) {
                     return MESG_ERROR_NWC24_SERVER;
-                } else {
-                    // Unreachable
                 }
             }
+            // Unreachable
+            return region;
         }
         void Setting::makeSupportCode() {
             wchar_t codeStr[12];
             wchar_t supportCodeMsg[0x100];
 
-            const wchar_t* msgA = System::getMessageManager()->getMessage(0x16d);
-            const wchar_t* msgB = System::getMessageManager()->getMessage(0x1b9);
+            const wchar_t* msgA = System::getMessageManager()->getMessage(MESG_SETTINGS_CONN_TEST_SUCCESS_ASK_PERFORM_UPDATE);
+            const wchar_t* msgB = System::getMessageManager()->getMessage(MESG_SETTINGS_WII_SUPPORT_CODE);
             swprintf(codeStr, ARRAY_LENGTH(codeStr), L"%d\n", mSupportCode);
             memset(supportCodeMsg, 0, sizeof(supportCodeMsg));
 
@@ -3901,10 +3922,10 @@ namespace ipl {
             }
 
             u32 se = mpWiiSettingData->data[www::wiisetting::WB_ID_SE];
-            if (se != '\x02' && se != '\0' && (u32)mpWiiSettingData->data[www::wiisetting::WB_ID_PAGE_ID] != '\x1e' &&
+            if (se != 2 && se != 0 && (u32)mpWiiSettingData->data[www::wiisetting::WB_ID_PAGE_ID] != 0x1e &&
                 mpWiiSettingData->data[www::wiisetting::WB_ID_EXCSE] == 0) {
                 unk_0xB9C = 0;
-            } else if (se == '\x02') {
+            } else if (se == 2) {
                 controller::Interface* controller = System::getYoungController();
                 if (controller) {
                     controller->rumble(0);
@@ -3939,7 +3960,7 @@ namespace ipl {
         static const SCNumber scNumber = {L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9'};
         static const SCNumber scNumber2 = {L'0', L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9'};
 
-        int SCNUMBER_UNUSED_numToWTextA(u32 number) {
+        void SCNUMBER_UNUSED_numToWTextA(u32 number) {
             SCNumber scNumberData = scNumber;
             wchar_t textDigits[10] = L"";
             wchar_t text[10] = L"";
@@ -3959,7 +3980,7 @@ namespace ipl {
                     break;
             wcscpy(text, textDigits + zeroOffset);
         }
-        int SCNUMBER_UNUSED_numToWTextB(u32 number) {
+        void SCNUMBER_UNUSED_numToWTextB(u32 number) {
             SCNumber scNumberData = scNumber2;
             wchar_t textDigits[10] = L"";
             wchar_t text[10] = L"";
@@ -3979,9 +4000,6 @@ namespace ipl {
                     break;
             wcscpy(text, textDigits + zeroOffset);
         }
-
-        // const u16 scNumber[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-        // const u16 scNumber2[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     }  // namespace scene
 }  // namespace ipl
