@@ -36,6 +36,16 @@
 
 namespace ipl {
     namespace scene {
+#if defined(VESION_43U)
+#define SETTING_ARC_SUBFOLDER "US2"
+#elif defined(VERSION_43E)
+#define SETTING_ARC_SUBFOLDER "EU2"
+#elif defined(VERSION_43J)
+#define SETTING_ARC_SUBFOLDER "JP2"
+#elif defined(VERSION_43K)
+#define SETTING_ARC_SUBFOLDER "KR2"
+#endif
+
         NCDAossConfig m_AOSSConfig;
         NCDApConfig m_RakuConfig;
 
@@ -115,7 +125,6 @@ namespace ipl {
         inline bool dialogHasResult() {
             return System::getDialog()->getLastResult() >= DialogWindow::RESULT_WAIT;
         }
-        // inline bool dialogRButton()
 
         Setting::Setting(EGG::Heap* heap, int startId) : scene::FaderSceneBase(heap) {
             unk_0x05C = 0;
@@ -235,15 +244,15 @@ namespace ipl {
                 case SC_PRODUCT_AREA_EUR:
                 case SC_PRODUCT_AREA_AUS:
                     snprintf(fontName, sizeof(fontName), "WiiNTLG-Regular.ttc");
-                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", "US2");
+                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", SETTING_ARC_SUBFOLDER);
                     break;
                 case SC_PRODUCT_AREA_KOR:
                     snprintf(fontName, sizeof(fontName), "Wii-kr_Round Gothic B.ttf");
-                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", "US2");
+                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", SETTING_ARC_SUBFOLDER);
                     break;
                 case SC_PRODUCT_AREA_CHN:
                     snprintf(fontName, sizeof(fontName), "Wii-cn_HeiTiW5.ttf");
-                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", "US2");
+                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", SETTING_ARC_SUBFOLDER);
                     break;
                 case SC_PRODUCT_AREA_TWN:
                     snprintf(fontName, sizeof(fontName), "WiiNTLG-Regular.ttc");
@@ -251,7 +260,7 @@ namespace ipl {
                     break;
                 default:
                     snprintf(fontName, sizeof(fontName), "WiiNTLG-Regular.ttc");
-                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", "US2");
+                    snprintf(archivePath, sizeof(archivePath), "/html/%s/iplsetting.ash", SETTING_ARC_SUBFOLDER);
                     break;
             }
 
@@ -1733,7 +1742,6 @@ namespace ipl {
                 utility::CharacterCode::UTF8ToUTF16((wchar_t*)msHtmlStrScratch, utf8Str, sizeof(msHtmlStrScratch) >> 1);
             }
 
-            // TODO: This string was originally encoded in Shift-JIS
             OSReport("キーボード: %d %d %d %d\n", kbdType, stringLimit, rowLimit, wcslen((wchar_t*)msHtmlStrScratch));
             ((wchar_t*)msHtmlStrScratch)[stringLimit] = 0;
 
@@ -1772,12 +1780,15 @@ namespace ipl {
             if (shouldZero)
                 memset(msHtmlStrScratch, 0, sizeof(msHtmlStrScratch));
 
+#if defined(VERSION_43U) | defined(VERSION_43E)
             if (prodArea == SC_PRODUCT_AREA_CHN) {
                 void* sysDict = System::getKeyboard()->getZiSystemDic();
                 void* oemDict = System::getKeyboard()->getZiOemDic();
                 textinput::MemoInputForm* form = System::getKeyboard()->memoFrm();
                 form->setZiDictionary(oemDict, sysDict);
             }
+#endif
+
             keyboard::Manager::KeyboardSetting kbdSetting;
             kbdSetting.type = kbdType;
             kbdSetting.wcString = (wchar_t*)msHtmlStrScratch;
@@ -3521,7 +3532,7 @@ namespace ipl {
                 } else if (mpWiiSettingFlag->err < 51100) {
                     return MESG_ERROR_NCD_WL_INVALID;
                 } else if (mpWiiSettingFlag->err < 51400) {
-                    return MESG_ERROR_NWC24_NETWORK;
+                    return MESG_ERROR_NWC24_NETWORK_NO_EUR;
                 } else if (mpWiiSettingFlag->err < 51500) {
                     return MESG_ERROR_INTERNET_ERROR_1;
                 } else if (mpWiiSettingFlag->err < 52100) {

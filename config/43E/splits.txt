@@ -828,7 +828,7 @@ src/scene/sdChannelMemory/iplSDMemory.cpp:
 	.text       start:0x813EB6E8 end:0x813F0870
 	.data       start:0x81655F60 end:0x81656BA8
 	.sdata2     start:0x81696A70 end:0x81696AA0
-	.sdata      start:0x81698DF0 end:0x81698EA0
+	.sdata      start:0x81698DF0 end:0x81698E88
 
 src/scene/setting/iplSetting.cpp:
 	.bss        start:0x810B83F0 end:0x810B85B8
@@ -836,7 +836,7 @@ src/scene/setting/iplSetting.cpp:
 	.rodata     start:0x81610B88 end:0x81610E08
 	.data       start:0x81656BA8 end:0x81657B58
 	.sdata2     start:0x81696AA0 end:0x81696AE0
-	.sdata      start:0x81698EA0 end:0x81699080
+	.sdata      start:0x81698E88 end:0x81699080
 	.sbss       start:0x8169AA80 end:0x8169AA90
 
 src/scene/setting/iplSensitivity.cpp:
@@ -864,7 +864,7 @@ src/scene/setting/iplUSBAP.c:
 	.bss        start:0x810BC148 end:0x810BD498
 	.text       start:0x813FC61C end:0x813FC9F8
 	.data       start:0x81657DC8 end:0x81657DD8
-	.sbss       start:0x8169AAA8 end:0x8169AAC0
+	.sbss       start:0x8169AAA8 end:0x8169AAC8
 
 src/scene/setting/iplUSBAPThread.cpp:
 	.text       start:0x813FC9F8 end:0x813FCB08
@@ -875,7 +875,7 @@ src/scene/setting/iplAOSSThread.cpp:
 	.text       start:0x813FCB08 end:0x813FD26C
 	.data       start:0x81657E20 end:0x81657E50
 	.sdata      start:0x81699090 end:0x81699098
-	.sbss       start:0x8169AAC0 end:0x8169AAD8
+	.sbss       start:0x8169AAC8 end:0x8169AAD8
 
 src/scene/setting/AOSSLink.c:
 	.bss        start:0x810BD4A8 end:0x810BDDD0
