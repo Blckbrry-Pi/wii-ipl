@@ -5,6 +5,7 @@
 #include "keyboard/tiSignWindow.h"
 
 #include <new>
+#include <revolution/kbd/hidtypes.h>
 
 namespace textinput {
     namespace keyboard {
@@ -16,9 +17,9 @@ namespace textinput {
             typedef struct {
                 u32 unk_0x0;  // 0x0
             } Command18Data;
-            typedef struct {
-                bool unk_0x0;  // 0x0
-            } Command19Data;
+            // typedef struct {
+            //     bool unk_0x0;  // 0x0
+            // } Command19Data;
             typedef struct {
                 const char* paneName;
                 bool unk_0x4;  // 0x4
@@ -31,7 +32,7 @@ namespace textinput {
 
                 const char* mpszName;
             };
-            typedef struct {
+            typedef struct PaneNameNormalAnimationKey {
                 char name[20];           // 0x00
                 const char* forcedName;  // 0x14
             } PaneNameNormalAnimationKey;
@@ -140,8 +141,8 @@ namespace textinput {
                 mbPrdcModeOn = false;
                 mpLangDepData = &csLanguageDependencyData[getLanguage()];
 
-                u32 cmd[3] = {};
-                sendCommand(3, cmd);
+                CommandReceiver::Command3Or5Data cmd = {};
+                sendCommand(CommandReceiver::INPUT_COMMAND_3, &cmd);
             }
             void Base::calc() {
             }
@@ -243,7 +244,7 @@ namespace textinput {
                                 sendCommand(32, local_78);
                                 if (ch == L'0' && getLanguage() != KR) {
                                     if (local_78[0] != '\0') {
-                                        sendCommand(6, NULL);
+                                        sendCommand(CommandReceiver::INPUT_COMMAND_6, NULL);
                                     }
 
                                     CommandReceiver::Command3Or5Data cmdData2 = {L' ', mInputMode, true, false, true, false, mpHeldButtonData};
@@ -341,11 +342,11 @@ namespace textinput {
                 u8 cmd18[4] = {0, 0, 0, 0};
                 sendCommand(18, cmd18);
                 if (mInputMode == INPUT_MODE_UNK_0) {
-                    Command19Data cmd19 = {1};
-                    sendCommand(19, &cmd19);
+                    CommandReceiver::ChangeKanaModeData kanaMode = {1};
+                    sendCommand(CommandReceiver::INPUT_COMMAND_19, &kanaMode);
                 }
                 if (mInputMode == INPUT_MODE_ABC_LOWER) {
-                    Command19Data cmd19 = {0};
+                    CommandReceiver::ChangeKanaModeData cmd19 = {0};
                     sendCommand(19, &cmd19);
                 }
                 if (mInputMode == INPUT_MODE_UNK_0) {
@@ -368,34 +369,39 @@ namespace textinput {
                 }
 
                 if (newMode == INPUT_MODE_UNK_0) {
-                    Command19Data cmd19 = {1};
+                    CommandReceiver::ChangeKanaModeData cmd19 = {1};
                     sendCommand(19, &cmd19);
                 }
                 if (newMode == INPUT_MODE_ABC_LOWER) {
-                    Command19Data cmd19 = {0};
+                    CommandReceiver::ChangeKanaModeData cmd19 = {0};
                     sendCommand(19, &cmd19);
                 }
                 updateFixMode();
                 sendCommand(41, NULL);
             }
             bool Base::isZiActive() {
-                CommandReceiver::ChangePredictMode local_8 = {};
-                sendCommand(31, &local_8);
-                if (local_8.bPredictEnabled) {
-                    if (local_8.ePredictMode != 1)
-                        return 1;
-                    return 0;
+                CommandReceiver::ChangePredictMode predictMode = {};
+                sendCommand(CommandReceiver::INPUT_COMMAND_GET_PREDICT_MODE, &predictMode);
+
+                bool enabled = predictMode.bPredictEnabled;
+                inputform::Base::PredictMode mode = (inputform::Base::PredictMode)predictMode.ePredictMode;
+
+                if (enabled) {
+                    return mode != inputform::Base::PM_Atok;
                 } else {
-                    return 0;
+                    return false;
                 }
             }
             bool Base::isAtokActive() {
-                CommandReceiver::ChangePredictMode local_8 = {};
-                sendCommand(31, &local_8);
+                CommandReceiver::ChangePredictMode predictMode = {};
+                sendCommand(CommandReceiver::INPUT_COMMAND_GET_PREDICT_MODE, &predictMode);
+                bool enabled = predictMode.bPredictEnabled;
+                inputform::Base::PredictMode mode = (inputform::Base::PredictMode)predictMode.ePredictMode;
 
-                if (!local_8.bPredictEnabled || local_8.ePredictMode == 1)
-                    return 1;
-                return 0;
+                if (enabled && mode == inputform::Base::PM_Atok)
+                    return true;
+                else
+                    return false;
             }
             void Base::setAbcMode(bool upperCase) {
                 mbIsUpperCase = upperCase;
@@ -727,24 +733,25 @@ namespace textinput {
             }
 
             void LayoutByNW4R::onActive() {
-                Command18Data local_10 = {};
-                Command19Data inputMode1;
-                Command19Data inputMode0;
+                // Command18Data local_10 = {};
+                // CommandReceiver::ChangeKanaModeData inputMode1;
+                // CommandReceiver::ChangeKanaModeData inputMode0;
 
-                sendCommand(18, &local_10);
-                if (mInputMode == INPUT_MODE_UNK_0) {
-                    inputMode0 = (Command19Data){true};
-                    sendCommand(19, &inputMode0);
-                }
-                if (mInputMode == INPUT_MODE_ABC_LOWER) {
-                    inputMode1 = (Command19Data){false};
-                    sendCommand(19, &inputMode1);
-                }
-                if (mInputMode == INPUT_MODE_UNK_0) {
-                    sendCommand(6, NULL);
-                    changeInputMode(mInputMode);
-                }
-                updateFixMode();
+                // sendCommand(18, &local_10);
+                // if (mInputMode == INPUT_MODE_UNK_0) {
+                //     inputMode0 = (CommandReceiver::ChangeKanaModeData){true};
+                //     sendCommand(19, &inputMode0);
+                // }
+                // if (mInputMode == INPUT_MODE_ABC_LOWER) {
+                //     inputMode1 = (CommandReceiver::ChangeKanaModeData){false};
+                //     sendCommand(19, &inputMode1);
+                // }
+                // if (mInputMode == INPUT_MODE_UNK_0) {
+                //     sendCommand(CommandReceiver::INPUT_COMMAND_6, NULL);
+                //     changeInputMode(mInputMode);
+                // }
+                // updateFixMode();
+                Base::onActive();
                 Layout::init();
             }
 
@@ -819,10 +826,22 @@ namespace textinput {
                 nw4r::lyt::TextBox* spaceKey = (nw4r::lyt::TextBox*)mpLayout->GetRootPane()->FindPaneByName(spaceKeyTextPaneName);
 
                 if (paneNameToCharCodes[10].wc[0] == 0xE057) {  // Custom space character I think
+                    // @bug treats csSpaceZero and csSpace as the wrong type.
+                    // TREATED AS:  const wchar_t *csSpace;
+                    // ACTUAL TYPE: const wchar_t csSpace[3];
+                    //
+                    // This would crash the menu... if this branch was ever
+                    // taken. There is no language or key type that actually
+                    // defines its spacebar/zero key with 0xE057 as the first
+                    // character. Otherwise it would pass in a const wchar_t *
+                    // with a value of:
+                    // - csSpaceZero: 0xE0570030 ({ 0xE057, L'0', 0 })
+                    // - csSpace:     0xE0570000 ({ 0xE057, 0 })
+
                     if (!mbPrdcModeOn) {
-                        spaceKey->SetString(csSpaceZero);
+                        spaceKey->SetString((wchar_t*)*(void**)csSpaceZero);
                     } else {
-                        spaceKey->SetString(csSpace);
+                        spaceKey->SetString((wchar_t*)*(void**)csSpace);
                     }
                 }
             }
@@ -859,7 +878,8 @@ namespace textinput {
                 }
             }
             void LayoutByNW4R::setLanguage(Language newLang) {
-                meLanguage = newLang;
+                Base::setLanguage(newLang);
+                // meLanguage = newLang;
                 nw4r::lyt::Pane* rootPane = mpLayout->GetRootPane();
                 if (newLang == JP) {
                     rootPane->FindPaneByName("P_spaceBT_JP")->GetMaterial()->SetTexture(0, mTexObjSpaceBtnJP);
@@ -999,9 +1019,11 @@ namespace textinput {
                     mbIsUpperCase = isUpperCaseJP;
                 }
             }
+
             bool LayoutByNW4R::updateInput(input::HKBManager& hkbManager) {
                 if (mpMgr->getToolBar()->isEnableKeytopChange()) {
-                    if (hkbManager.GetTriggeredKeySet().IsValid()) {
+                    input::HKBManager::KeySet keySet = hkbManager.GetTriggeredKeySet();
+                    if (keySet.IsValid()) {
                         if (mpHeldButtonData != NULL) {
                             OnKeyData data = {};
                             data.paneName = mpHeldButtonData->szPaneName;
@@ -1014,46 +1036,45 @@ namespace textinput {
                         }
                     }
                 } else {
-                    input::HKBManager::KeySet keySet = hkbManager.GetTriggeredKeySet();
-                    while (keySet.IsValid()) {
-                        nw4rmanager::AnmPane* anmPane = NULL;
-                        u8 key = keySet.GetKey();
-                        wchar_t wchar = keySet.GetWChar();
-                        switch (key) {
-                            case 0x28:
-                            case 0x58:
-                                if ((hkbManager.GetModifierState() & 4) != 0)
+                    input::HKBManager::KeySet curr = hkbManager.GetTriggeredKeySet();
+                    for (; curr.IsValid(); curr = curr.GetNext()) {
+                        nw4rmanager::AnmPane* pane = NULL;
+                        u8 keyCode = curr.GetKey();
+                        wchar_t ch = curr.GetWChar();
+                        switch (keyCode) {
+                            case KBD_KEY_KEYBOARD_ENTER:
+                            case KBD_KEY_KEYPAD_ENTER:
+                                if (hkbManager.GetModifierState() & KBD_HID_MOD_ALT)
                                     break;
 
-                                anmPane = searchAnmPane("W_CPkey_LF");
+                                pane = searchAnmPane("W_CPkey_LF");
                                 break;
+
                             default:
-                                anmPane = searchAnmPane(wchar);
+                                pane = searchAnmPane(ch);
                                 break;
                         }
-                        if (anmPane != NULL) {
-                            anmPane->onAnmEvent(nw4rmanager::AnmPane::PE_0);
+                        if (pane != NULL) {
+                            pane->onAnmEvent(nw4rmanager::AnmPane::PE_0);
                         }
-                        ++keySet;
                     }
 
-                    keySet = hkbManager.GetRepeatedKeySet();
-                    while (keySet.IsValid()) {
-                        nw4rmanager::AnmPane* anmPane = NULL;
-                        u8 key = keySet.GetKey();
-                        wchar_t wchar = keySet.GetWChar();
-                        switch (key) {
-                            case 0x2A:
-                                if ((hkbManager.GetModifierState() & 4) != 0)
+                    curr = hkbManager.GetRepeatedKeySet();
+                    for (; curr.IsValid(); curr = curr.GetNext()) {
+                        nw4rmanager::AnmPane* pane = NULL;
+                        u8 keyCode = curr.GetKey();
+                        wchar_t ch = curr.GetWChar();
+                        switch (keyCode) {
+                            case KBD_KEY_KEYBOARD_BACKSPACE:
+                                if (hkbManager.GetModifierState() & KBD_HID_MOD_ALT)
                                     break;
-                            case 0x4C:
-                                anmPane = searchAnmPane("W_CPkey_DELETE");
+                            case KBD_KEY_KEYBOARD_DELETE:
+                                pane = searchAnmPane("W_CPkey_DELETE");
                                 break;
                         }
-                        if (anmPane != NULL) {
-                            anmPane->onAnmEvent(nw4rmanager::AnmPane::PE_0);
+                        if (pane != NULL) {
+                            pane->onAnmEvent(nw4rmanager::AnmPane::PE_0);
                         }
-                        ++keySet;
                     }
                 }
                 return false;

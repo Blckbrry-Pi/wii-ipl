@@ -320,7 +320,7 @@ namespace textinput {
                         case KBD_KEY_KEYBOARD_L_SHIFT:
                         case KBD_KEY_KEYBOARD_R_SHIFT:
                             mbShiftHeld = false;
-                            if (mgr()->getToolBar()->isQwerty() && mgr()->getPCKeyboard()->getUnkValue3()) {
+                            if (mgr()->getToolBar()->isQwerty() && mgr()->getPCKeyboard()->isLangKeyActive()) {
                                 sendCommand(CommandReceiver::INPUT_COMMAND_46, NULL);
                             }
                             return false;

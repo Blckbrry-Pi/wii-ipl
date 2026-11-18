@@ -268,6 +268,13 @@ namespace textinput {
             PaneComponent* searchPaneComponent(const char* name);
 
         protected:
+            // Kind of hacky, but fixes setAllBoundingBoxComponentTriggerTarget.
+            // Maybe had a debug check in between getting and returning?
+            u16 getNumPCs_() const {
+                u16 pcCount = nw4r::ut::List_GetSize(&mPaneComponents);
+                return pcCount;
+            }
+
             class PaneToComponent {
             public:
                 PaneToComponent(nw4r::lyt::Pane* pane, PaneComponent* component) : mpPane(pane), mpComponent(component) {}

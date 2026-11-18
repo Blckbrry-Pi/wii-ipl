@@ -536,18 +536,18 @@ namespace textinput {
 
                     typedef struct SavedTranslateMode {
                         tistring::Decolated::TranslateMode translateMode;
-                        bool isNone;
-                        bool isHira;
+                        bool isHiragana;
+                        bool isDirect;
                     } SavedTranslateMode;
                     SavedTranslateMode currStringModes;
                     SavedTranslateMode pcKeyboardModes;
 
                     if (dataCmd0->bCopyTranslateModes) {
                         pcKeyboardModes.translateMode = (tistring::Decolated::TranslateMode)mpManager->getPCKeyboard()->getTranslateMode();
-                        pcKeyboardModes.isHira =
+                        pcKeyboardModes.isDirect =
                             (tistring::Decolated::TranslateMode)mpManager->getPCKeyboard()->getTranslateMode() == tistring::Decolated::TM_NONE;
-                        pcKeyboardModes.isNone = (tistring::Decolated::TranslateMode)mpManager->getPCKeyboard()->getTranslateMode() ==
-                                                 tistring::Decolated::TM_ROMAJI_HIRAGANA;
+                        pcKeyboardModes.isHiragana = (tistring::Decolated::TranslateMode)mpManager->getPCKeyboard()->getTranslateMode() ==
+                                                     tistring::Decolated::TM_ROMAJI_HIRAGANA;
 
                         tistring::Decolated* currString = getCurrentString(false);
 
@@ -571,10 +571,10 @@ namespace textinput {
 
                         bool useAtok = !mbPredictOn ? false : mePredictMode == PM_Atok;
                         if (useAtok) {
-                            currStringModes.isHira = false;
-                            currStringModes.isNone = false;
-                            mpUnfixString->setFixMode(pcKeyboardModes.isHira);
-                            mpUnfixString->changeKanaMode(pcKeyboardModes.isNone);
+                            currStringModes.isDirect = false;
+                            currStringModes.isHiragana = false;
+                            mpUnfixString->setFixMode(pcKeyboardModes.isDirect);
+                            mpUnfixString->changeKanaMode(pcKeyboardModes.isHiragana);
                         }
                     }
                     if (dataCmd0->bUseCombiningAccents) {
@@ -632,8 +632,8 @@ namespace textinput {
 
                         bool useAtok = !mbPredictOn ? false : mePredictMode == PM_Atok;
                         if (useAtok) {
-                            mpUnfixString->setFixMode(currStringModes.isHira);
-                            mpUnfixString->changeKanaMode(currStringModes.isNone);
+                            mpUnfixString->setFixMode(currStringModes.isDirect);
+                            mpUnfixString->changeKanaMode(currStringModes.isHiragana);
                         }
                     }
                     if (checkHeadOfSentence(true)) {
@@ -727,7 +727,7 @@ namespace textinput {
 
                         bool cVar15;
                         if (mpManager->getToolBar()->isQwerty()) {
-                            cVar15 = mpManager->getPCKeyboard()->getUnkValue4();  // 0xFC
+                            cVar15 = mpManager->getPCKeyboard()->isLineFeedEnabled();  // 0xFC
                         } else {
                             cVar15 = mpManager->getCellPhoneKeyboard()->isLineFeedEnabled();  // 0xE0
                         }
@@ -1154,7 +1154,7 @@ namespace textinput {
                     return;
                 }
                 case INPUT_COMMAND_46: {
-                    if (meLanguage == CN && !mpManager->getPCKeyboard()->getUnkValue2() && mpManager->getPCKeyboard()->getUnkValue3()) {
+                    if (meLanguage == CN && !mpManager->getPCKeyboard()->isOnlyQwerty() && mpManager->getPCKeyboard()->isLangKeyActive()) {
                         if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) {
                             mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                         } else {
@@ -2171,7 +2171,7 @@ namespace textinput {
                             mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                         }
                         toggleAtokMode_(1);
-                    } else if (meLanguage == KR && !mpManager->getPCKeyboard()->getUnkValue2() && mpManager->getPCKeyboard()->getUnkValue3()) {
+                    } else if (meLanguage == KR && !mpManager->getPCKeyboard()->isOnlyQwerty() && mpManager->getPCKeyboard()->isLangKeyActive()) {
                         if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) {
                             mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                         } else {
@@ -2183,7 +2183,7 @@ namespace textinput {
                 case HVK_UNK_0x12:
                     if (mePredictMode == PM_Atok) {
                         if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00 && !mbPredictOn) {
-                            if (!mpManager->getPCKeyboard()->getUnkValue2()) {
+                            if (!mpManager->getPCKeyboard()->isOnlyQwerty()) {
                                 onSE(sound::SE_CHAR_CURSOR_FIX);
                             }
                         } else {
@@ -2196,7 +2196,7 @@ namespace textinput {
                     if (mePredictMode == PM_Atok) {
                         toggleAtokMode_(0);
                     } else if (meLanguage == KR || meLanguage == CN) {
-                        if (!mpManager->getPCKeyboard()->getUnkValue2() && mpManager->getPCKeyboard()->getUnkValue3()) {
+                        if (!mpManager->getPCKeyboard()->isOnlyQwerty() && mpManager->getPCKeyboard()->isLangKeyActive()) {
                             if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) {
                                 mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                             } else {
@@ -2246,7 +2246,7 @@ namespace textinput {
                         mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_02);
                     } else if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_02) {
                         mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
-                    } else if (!mpManager->getPCKeyboard()->getUnkValue2()) {
+                    } else if (!mpManager->getPCKeyboard()->isOnlyQwerty()) {
                         mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                     }
                     break;
@@ -2732,7 +2732,7 @@ namespace textinput {
             if (!mpManager->getToolBar()->isEnableKeytopChange() && !mpManager->getToolBar()->isQwerty()) {
                 uVar1 = false;
             } else {
-                uVar1 = !mpManager->getPCKeyboard()->getUnkValue2();
+                uVar1 = !mpManager->getPCKeyboard()->isOnlyQwerty();
             }
             if (!uVar1)
                 return;
@@ -2812,11 +2812,11 @@ namespace textinput {
 
         void Base::notifyChangeMode() {
             if (mePredictMode == PM_Atok) {
-                if (!mpManager->getToolBar()->isQwerty() || !mpManager->getPCKeyboard()->isABC() ||
-                    mpManager->getPCKeyboard()->getTranslateMode() != keyboard::pctype::Base::TM_00) {
-                    if (!mpManager->getToolBar()->isQwerty()) {
-                        mpManager->getCellPhoneKeyboard()->getInputMode();
-                    }
+                if ((mpManager->getToolBar()->isQwerty() && mpManager->getPCKeyboard()->isABC() &&
+                     mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) ||
+                    (!mpManager->getToolBar()->isQwerty() &&
+                     mpManager->getCellPhoneKeyboard()->getInputMode() == keyboard::cellphonetype::Base::INPUT_MODE_ABC_LOWER_JP)) {
+                    // Do nothing lol
                 }
 
                 if (mpUnfixString->getInputStringLength() == 0) {
@@ -2869,7 +2869,7 @@ namespace textinput {
             tistring::Decolated* currString = getCurrentString(false);
             if (param_2 & 8) {
                 if (meLanguage == CN || meLanguage == KR) {
-                    if (!mpManager->getPCKeyboard()->getUnkValue2() && mpManager->getPCKeyboard()->getUnkValue3()) {
+                    if (!mpManager->getPCKeyboard()->isOnlyQwerty() && mpManager->getPCKeyboard()->isLangKeyActive()) {
                         if (mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) {
                             mpManager->getPCKeyboard()->setTranslateMode(keyboard::pctype::Base::TM_01);
                         } else {

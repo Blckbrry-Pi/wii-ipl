@@ -323,7 +323,7 @@ namespace textinput {
 
             virtual void enableSpaceByRight(bool rightWithSpace) { mbRightWithSpace = rightWithSpace; }
             virtual void onClose();
-            virtual bool canConvert();
+            virtual bool canConvert() { return getCurrentString(false) == mpUnfixString; }
 
             virtual void setString(const wchar_t* string);
 

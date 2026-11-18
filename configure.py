@@ -908,13 +908,13 @@ config.libs = [
     ),
     # it decides to do fast optimization for this one
     IPLSection("keyboard", [
-            Object(NonMatching, "keyboard/tiPcKeyboard.cpp", extra_cflags=["-O4,p"]),
-            Object(NonMatching, "keyboard/tiCellPhone.cpp", extra_cflags=["-O4,p"]),
+            Object(Equivalent,  "keyboard/tiPcKeyboard.cpp", extra_cflags=["-O4,p", "-enc UTF8"], shift_jis=False),
+            Object(Equivalent,  "keyboard/tiCellPhone.cpp", extra_cflags=["-O4,p"]),
             Object(Equivalent,  "keyboard/tiInputForm.cpp", extra_cflags=["-O4,p", "-enc UTF8"], shift_jis=False),
-            Object(NonMatching, "keyboard/tiCandidateBox.cpp", extra_cflags=["-O4,p"]),
-            Object(NonMatching, "keyboard/tiToolBar.cpp", extra_cflags=["-O4,p"]),
-            Object(NonMatching, "keyboard/tiPredictLang.cpp", extra_cflags=["-O4,p"]),
-            Object(NonMatching, "keyboard/tiSignWindow.cpp", extra_cflags=["-O4,p"]),
+            Object(Matching,    "keyboard/tiCandidateBox.cpp", extra_cflags=["-O4,p"]),
+            Object(Matching,    "keyboard/tiToolBar.cpp", extra_cflags=["-O4,p"]),
+            Object(Matching,    "keyboard/tiPredictLang.cpp", extra_cflags=["-O4,p"]),
+            Object(Equivalent,  "keyboard/tiSignWindow.cpp", extra_cflags=["-O4,p"]),
             Object(Equivalent,  "keyboard/tiString.cpp", extra_cflags=["-O4,p"]),
             Object(NonMatching, "keyboard/tiAtokString.cpp", extra_cflags=["-O4,p"]),  # for 4.3J
             Object(Matching,    "keyboard/tiZiString.cpp", extra_cflags=["-O4,p"]),    # for 4.3U and 4.3E
@@ -932,7 +932,7 @@ config.libs = [
             Object(NonMatching, "keyboard/MyTiLetterForm.cpp", extra_cflags=["-O4,p"]),
             Object(Matching,    "keyboard/MyTiBg.cpp", extra_cflags=["-O4,p"]),
             Object(Matching,    "keyboard/tiDebug.cpp", extra_cflags=["-O4,p"]),
-            Object(Equivalent,  "keyboard/tiGUIManager.cpp", extra_cflags=["-O4,p"]),
+            Object(Matching,    "keyboard/tiGUIManager.cpp", extra_cflags=["-O4,p"]),
             Object(Equivalent,  "keyboard/tiHKBManager.cpp", extra_cflags=["-O4,p"]),
             Object(Equivalent,  "keyboard/tiHwKeyboard.cpp", extra_cflags=["-O4,p"]),
             Object(Matching,    "keyboard/tiLayout.cpp", extra_cflags=["-O4,p"]),

@@ -123,12 +123,12 @@ namespace textinput {
         }
 
         GUIComponent* GUIManager::getComponent(u32 id) {
-            IDToComponent* p = static_cast<IDToComponent*>(nw4r::ut::List_GetNth(&mComponents, (u16)id));
+            IDToComponent* p = static_cast<IDToComponent*>(nw4r::ut::List_GetNth(&mComponents, id));
             return p->mpComponent;
         }
 
         GUIComponent* GUIManager::getComponent(u32 id) const {
-            IDToComponent* p = static_cast<IDToComponent*>(nw4r::ut::List_GetNth(&mComponents, (u16)id));
+            IDToComponent* p = static_cast<IDToComponent*>(nw4r::ut::List_GetNth(&mComponents, id));
             return p->mpComponent;
         }
 
@@ -284,8 +284,8 @@ namespace textinput {
         }
 
         PaneComponent* PaneManager::searchPaneComponent(const char* name) {
-            for (u32 i = 0; i < nw4r::ut::List_GetSize(&mPaneComponents); i++) {
-                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, (u16)i));
+            for (u32 i = 0; i < getNumPCs_(); i++) {
+                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, i));
                 if (util::strcmp(p->mpPane->GetName(), name)) {
                     return p->mpComponent;
                 }
@@ -294,8 +294,8 @@ namespace textinput {
         }
 
         PaneComponent* PaneManager::getPaneComponentByPane(nw4r::lyt::Pane* pane) {
-            for (u32 i = 0; i < nw4r::ut::List_GetSize(&mPaneComponents); i++) {
-                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, (u16)i));
+            for (u32 i = 0; i < getNumPCs_(); i++) {
+                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, i));
                 if (p->mpPane == pane) {
                     return p->mpComponent;
                 }
@@ -304,8 +304,8 @@ namespace textinput {
         }
 
         void PaneManager::setAllBoundingBoxComponentTriggerTarget(bool bEnable) {
-            for (u32 i = 0; i < nw4r::ut::List_GetSize(&mPaneComponents); i++) {
-                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, (u16)i));
+            for (u32 i = 0; i < getNumPCs_(); i++) {
+                PaneToComponent* p = static_cast<PaneToComponent*>(nw4r::ut::List_GetNth(&mPaneComponents, i));
                 if (nw4r::ut::DynamicCast<nw4r::lyt::Bounding*>(p->getPane())) {
                     p->mpComponent->setTriggerTarget(bEnable);
                 }

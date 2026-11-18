@@ -118,12 +118,12 @@ namespace textinput {
     public:
         typedef enum INPUT_COMMAND {
             INPUT_COMMAND_0 = 0,             // 0
-            INPUT_COMMAND_1,                 // 1 backspace
-            INPUT_COMMAND_2,                 // 2 delete forward
+            INPUT_COMMAND_1,                 // 1 Backspace
+            INPUT_COMMAND_2,                 // 2 Delete Forward
             INPUT_COMMAND_3,                 // 3
             INPUT_COMMAND_4,                 // 4 (might not exist)
             INPUT_COMMAND_5,                 // 5
-            INPUT_COMMAND_6,                 // 6
+            INPUT_COMMAND_6,                 // 6 Confirm Input
             INPUT_COMMAND_7,                 // 7
             INPUT_COMMAND_8,                 // 8
             INPUT_COMMAND_9,                 // 9
@@ -135,30 +135,30 @@ namespace textinput {
             INPUT_COMMAND_POINT_RELEASE,     // 15
             INPUT_COMMAND_POINT_HOLD,        // 16
             INPUT_COMMAND_17,                // 17
-            INPUT_COMMAND_18,                // 18
-            INPUT_COMMAND_19,                // 19
-            INPUT_COMMAND_20,                // 20
+            INPUT_COMMAND_18,                // 18 Update Translate Mode
+            INPUT_COMMAND_19,                // 19 Change Kana Mode
+            INPUT_COMMAND_20,                // 20 Set Fix Mode
             INPUT_COMMAND_21,                // 21
             INPUT_COMMAND_22,                // 22
             INPUT_COMMAND_23,                // 23
-            INPUT_COMMAND_24,                // 24
-            INPUT_COMMAND_25,                // 25
-            INPUT_COMMAND_26,                // 26
-            INPUT_COMMAND_27,                // 27
-            INPUT_COMMAND_28,                // 28
+            INPUT_COMMAND_24,                // 24 Do Scroll
+            INPUT_COMMAND_25,                // 25 Toggle Kana Dakuten
+            INPUT_COMMAND_26,                // 26 Toggle Kana Handakuten
+            INPUT_COMMAND_27,                // 27 Cycle Kana (Normal -> Dakuten -> Handakuten -> Small -> Normal)
+            INPUT_COMMAND_28,                // 28 Toggle Kana Small
             INPUT_COMMAND_SET_PREDICT_MODE,  // 29
             INPUT_COMMAND_30,                // 30
             INPUT_COMMAND_GET_PREDICT_MODE,  // 31
             INPUT_COMMAND_32,                // 32
             INPUT_COMMAND_33,                // 33
             INPUT_COMMAND_34,                // 34
-            INPUT_COMMAND_35,                // 35
-            INPUT_COMMAND_36,                // 36
+            INPUT_COMMAND_35,                // 35 Clip String to Max Row Count
+            INPUT_COMMAND_36,                // 36 Set String Length
             INPUT_COMMAND_37,                // 37
             INPUT_COMMAND_38,                // 38 Process HW Keyboard Code
             INPUT_COMMAND_39,                // 39
             INPUT_COMMAND_40,                // 40
-            INPUT_COMMAND_41,                // 41
+            INPUT_COMMAND_41,                // 41 Notify Mode Changed
             INPUT_COMMAND_42,                // 42
             INPUT_COMMAND_43,                // 43
             INPUT_COMMAND_44,                // 44
@@ -193,6 +193,15 @@ namespace textinput {
             u32 unk_0xC;              // 0xC, not sure if this exists???
         };
 
+        struct ChangeKanaModeData {
+            bool bKanaOn;  // 0x0
+            // u8 _padding_0x1[3];  // 0x1
+        };
+        struct SetFixModeData {
+            bool bFixOn;  // 0x0
+            // u8 _padding_0x1[3];  // 0x1
+        };
+
         struct Command38Data {  // HWKB Ctrl Code
             HVKCode ctrlCode;   // 0x0
             u32 flags;          // 0x4
@@ -213,7 +222,10 @@ namespace textinput {
         CommandSender() : mpCommandReceiver(NULL) {}
 
         virtual void setCommandReceiver(CommandReceiver* cmdRecv);
-        virtual void sendCommand(u32 command, void* data);
+        virtual void sendCommand(u32 command, void* data) {
+            if (mpCommandReceiver)
+                mpCommandReceiver->onCommand((CommandReceiver::INPUT_COMMAND)command, data);
+        }
         virtual void updateFromReceiver(u32 command, void* data) {}
 
         nw4r::ut::Link mLink;  // 0x04

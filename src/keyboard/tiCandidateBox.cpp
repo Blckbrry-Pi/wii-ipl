@@ -185,9 +185,11 @@ namespace textinput {
         }
 
         void CandidateBoxCaller::Candidates::updateCandidate() {
+            typedef wchar_t Prediction[0x40];
+            Prediction* predictions = szwcPredicted;
             for (u32 i = 0; i < mNumCandidate; i++) {
                 // U+0020 Space, U+3000 Ideographic Space
-                if (szwcPredicted[i][0] == L' ' || szwcPredicted[i][0] == L'　') {
+                if (predictions[i][0] == L' ' || predictions[i][0] == L'　') {
                     // U+E057 Private Use Area
                     szwcPredicted[i][0] = 0xE057;
                 }
@@ -250,7 +252,6 @@ namespace textinput {
         }
 
         void Base::updateCandidate() {
-            // NONMATCHING
             if (mpCandidates != NULL) {
                 mpCandidates->updateCandidate();
             }
@@ -281,7 +282,7 @@ namespace textinput {
         bool Base::checkValidation() {
             bool ok = true;
             if (meLanguage == KR) {
-                if (mpManager->getToolBar()->isQwerty() || mpManager->getCellPhoneKeyboard()->getInputType() != keyboard::pctype::Base::IT_03) {
+                if (mpManager->getToolBar()->isQwerty() || mpManager->getCellPhoneKeyboard()->getInputType() != keyboard::pctype::Base::IM_03) {
                     ok = false;
                 }
             } else if (meLanguage == CN) {
@@ -290,12 +291,12 @@ namespace textinput {
                         ok = false;
                     }
                 } else {
-                    if (mpManager->getCellPhoneKeyboard()->getInputType() != keyboard::pctype::Base::IT_04) {
+                    if (mpManager->getCellPhoneKeyboard()->getInputType() != keyboard::pctype::Base::IM_04) {
                         ok = false;
                     }
                 }
             } else {
-                if (!mpManager->getToolBar()->isQwerty() && mpManager->getCellPhoneKeyboard()->getInputType() == keyboard::pctype::Base::IT_01) {
+                if (!mpManager->getToolBar()->isQwerty() && mpManager->getCellPhoneKeyboard()->getInputType() == keyboard::pctype::Base::IM_01) {
                     ok = false;
                 }
             }
@@ -902,9 +903,6 @@ namespace textinput {
             mpTextsPane = NULL;
         }
 
-// HACK: Is there a way to automatically get the compiler to not pool this?
-#pragma push
-#pragma pool_data off
         void UITextArea::Create(nw4rmanager::Layout* layout) {
             // These could have been static...
             const char* textPanes[NUM_PANES] = {
@@ -931,7 +929,6 @@ namespace textinput {
             mSize = mpTextBoxPane[0]->getTextPane()->GetFontSize();
             mpTextAreaPane->setListener(this);
         }
-#pragma pop
 
         void UITextArea::Init() {
             for (u32 i = 0; i < NUM_PANES; i++) {
@@ -966,13 +963,17 @@ namespace textinput {
             f32 fontSizeWidth = pTextBox->GetFontSize().width;
             f32 charSpace = pTextBox->GetCharSpace();
             f32 acc = 0.0f;
-            for (int i = 0; text[i] != L'\0'; i++) {
+
+            for (const wchar_t* currText = text; *currText != L'\0'; currText++) {
                 acc += charSpace;
-                acc += f->GetCharWidth(text[i]);
+                acc += f->GetCharWidth(*currText);
             }
-            return acc * (fontSizeWidth / f->GetWidth()) + 0.01f;
+            return 0.01f + acc * (fontSizeWidth / f->GetWidth());
         }
 
+        static f32 calcStringWidth_(nw4r::lyt::TextBox* pTextBox) {
+            return calcStringWidth(pTextBox->GetString(), pTextBox);
+        }
         static f32 calcStringWidth(nw4r::lyt::TextBox* pTextBox) {
             if (pTextBox == NULL) {
                 return 0.0f;
@@ -981,10 +982,7 @@ namespace textinput {
         }
 
         void UITextArea::CalcPaneLocate_() {
-            // NONMATCHING - only regswaps, hopefully
-            // The calcStringWidth inline may be partially responsible,
-            // so looking into the smaller functions utilizing that inline
-            // might be simpler (GetNextPageIdx / GetPrevPageIdx)
+            // NONMATCHING - regswaps only
             f32 widthScale = GetWidthScale_();
             f32 margin = GetMargin_();
             f32 xOffset = mfXOffset;
@@ -993,7 +991,7 @@ namespace textinput {
             f32 areaPaneWidth = mpTextAreaPane->getPane()->GetSize().width;
             s32 selectedIdx = GetSelectedTextIdx();
 
-            for (int i = 0; i < (int)NUM_PANES; i++) {
+            for (int i = 0; i < NUM_PANES; i++) {
                 nw4r::lyt::TextBox* textPane = mpTextBoxPane[i]->getTextPane();
                 nw4r::lyt::Bounding* boundPane = mpBoundingPane[i]->getBoundPane();
                 nw4r::lyt::Size sz1 = textPane->GetSize();
@@ -1029,12 +1027,12 @@ namespace textinput {
                 f32 stringWidth = calcStringWidth(textPane);
                 textPane->SetSize(nw4r::lyt::Size(stringWidth, sz2.height));
                 boundPane->SetSize(nw4r::lyt::Size(stringWidth * widthScale, sz2.height));
+                f32 scaledWidth = stringWidth * widthScale;
 
                 xOffset -= margin;
-                xOffset -= stringWidth * widthScale;
+                xOffset -= scaledWidth;
 
-                stringWidth *= widthScale;
-                f32 x = stringWidth / 2.0f + (areaPaneXOffset + xOffset);
+                f32 x = scaledWidth / 2.0f + (areaPaneXOffset + xOffset);
                 textPane->SetTranslate(nw4r::math::VEC2(x, 0.0f));
                 boundPane->SetTranslate(nw4r::math::VEC2(x, 0.0f));
 
@@ -1063,13 +1061,21 @@ namespace textinput {
 
                 textPane->SetString(mpCandidates->szwcPredicted[offsetIdx]);
                 textPane->SetVisible(true);
-                nw4r::lyt::Size sz2 = textPane->GetSize();
-                f32 stringWidth = calcStringWidth(textPane);
+                nw4r::lyt::Size sz2(textPane->GetSize());
+
+                // TODO: Bit of a hack, but matching
+                f32 stringWidth;
+                if (textPane == NULL)
+                    stringWidth = 0.0f;
+                else
+                    stringWidth = calcStringWidth_(textPane);
+
                 textPane->SetSize(nw4r::lyt::Size(stringWidth, sz2.height));
                 boundPane->SetSize(nw4r::lyt::Size(stringWidth * widthScale, sz2.height));
 
-                stringWidth *= widthScale;
-                f32 x = stringWidth / 2.0f + (areaPaneXOffset + xOffset);
+                f32 scaledWidth = stringWidth * widthScale;
+
+                f32 x = scaledWidth / 2.0f + (areaPaneXOffset + xOffset);
                 textPane->SetTranslate(nw4r::math::VEC2(x, 0.0f));
                 boundPane->SetTranslate(nw4r::math::VEC2(x, 0.0f));
 
@@ -1077,13 +1083,13 @@ namespace textinput {
                     mpTextAnmPane[i]->onAnmEvent(nw4rmanager::AnmPane::PE_1);
                 }
                 xOffset += margin;
-                xOffset += stringWidth;
+                xOffset += scaledWidth;
                 offsetIdx++;
                 if (xOffset <= 0.0f) {
                     mpTextAnmPane[i]->onAnmEvent(nw4rmanager::AnmPane::PE_5);
                 }
                 i++;
-                if (i >= (int)NUM_PANES) {
+                if (i >= NUM_PANES) {
                     i = 0;
                 }
             }
@@ -1151,7 +1157,6 @@ namespace textinput {
         }
 
         void UITextArea::Draw(const nw4r::lyt::DrawInfo& drawInfo) {
-            // NONMATCHING
             s32 selected = GetSelectedPaneIdx();
             if (!IsScrolling()) {
                 for (u32 i = 0; i < NUM_PANES; i++) {
@@ -1162,25 +1167,35 @@ namespace textinput {
             }
 
             nw4r::ut::Rect r = mpTextAreaPane->getPane()->GetPaneRect(drawInfo);
-            // TODO - These vectors are zero-initialized using GPRs first...
-            nw4r::math::VEC3 v1;
-            nw4r::math::VEC3 v2;
-            v1.x = r.left;
-            v1.y = r.top;
-            v2.x = r.right;
-            v2.y = r.bottom;
-            MTXMultVec(mpTextAreaPane->getTextPane()->GetGlobalMtx(), v1, v1);
-            MTXMultVec(mpTextAreaPane->getTextPane()->GetGlobalMtx(), v2, v2);
+
+            Vec leftTop = {};
+            leftTop.x = r.left;
+            leftTop.y = r.top;
+            Vec rightBottom = {};
+            rightBottom.x = r.right;
+            rightBottom.y = r.bottom;
+            MTXMultVec(mpTextAreaPane->getTextPane()->GetGlobalMtx(), &leftTop, &leftTop);
+            MTXMultVec(mpTextAreaPane->getTextPane()->GetGlobalMtx(), &rightBottom, &rightBottom);
             u32 left, top, wd, ht;
             GXGetScissor(&left, &top, &wd, &ht);
-            // TODO - These floats need to be stored to the stack
-            f32 f3 = v1.x + mfScreenWidth / 2.0f;
-            f3 += f3 * (640.0f / mfScreenWidth - 1.0f);
-            f32 f2 = (640.0f / mfScreenWidth) * (v2.x - v1.x);
-            GXSetScissor(f3, top, f2, ht);
+
+            // TODO: There might be an actual struct this corresponds to?
+            struct {
+                f32 vpLeft;
+                f32 vpTop;
+                f32 vpWd;
+                f32 vpHt;
+                f32 vpNearz;
+                f32 vpFarz;
+            } dims;
+            f32 screenScale = 640.0f / mfScreenWidth;
+            f32 centerX = leftTop.x + mfScreenWidth / 2.0f;
+            dims.vpLeft = centerX + centerX * (screenScale - 1.0f);
+            dims.vpWd = screenScale * (rightBottom.x - leftTop.x);
+            GXSetScissor(dims.vpLeft, top, dims.vpWd, ht);
             mpTextsPane->getPane()->Draw(drawInfo);
             if (!IsScrolling()) {
-                GXSetScissor(left, top, (f2 + f3) - left, ht);
+                GXSetScissor(left, top, (dims.vpWd + dims.vpLeft) - left, ht);
                 for (u32 i = 0; i < NUM_PANES; i++) {
                     if (i == selected || mpTextAnmPane[i]->getState() == ANM_FocusOut) {
                         mpTextBoxPane[i]->getPane()->SetVisible(true);
@@ -1192,7 +1207,7 @@ namespace textinput {
         }
 
         s32 UITextArea::GetNextPageIdx_(s32 idx) const {
-            // NONMATCHING - only regswaps, hopefully
+            // NONMATCHING - regswaps only
             f32 areaPaneWidth = mpTextAreaPane->getPane()->GetSize().width;
 
             nw4r::lyt::TextBox* textBox = mpTextBoxPane[0]->getTextPane();
@@ -1216,7 +1231,7 @@ namespace textinput {
         }
 
         s32 UITextArea::GetPrevPageIdx_(s32 idx) const {
-            // NONMATCHING - only regswaps, hopefully
+            // NONMATCHING - regswaps only
             f32 areaPaneWidth = mpTextAreaPane->getPane()->GetSize().width;
 
             nw4r::lyt::TextBox* textBox = mpTextBoxPane[0]->getTextPane();
@@ -1258,7 +1273,7 @@ namespace textinput {
                 }
             }
 
-            mScrollAnimation.startAnm(0.0f, -acc, 15.0f, this, this);
+            mScrollAnimation.startAnm(0.0f, -acc, 15.0f, this, reinterpret_cast<void*>(steps));
         }
 
         void UITextArea::StartScrollToIdx(s32 idx) {
@@ -1321,7 +1336,7 @@ namespace textinput {
                 while (idx < i) {
                     i = GetPrevPageIdx_(i);
                 }
-                StartScrollPageToIdx(i);
+                StartScrollToIdx(i);
             }
         }
 

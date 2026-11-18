@@ -122,6 +122,13 @@ namespace nw4r {
                 T mask = ~(static_cast<T>(-1) << len);
                 return bits >> pos & mask;
             }
+
+            static const u32 mask2 = ~(static_cast<u32>(-1) << 4) << 0;
+            template <typename T>
+            inline T SetBits(T bits, int pos, int len, T value) {
+                T mask = ~(static_cast<T>(-1) << len) << pos;
+                return (bits & ~mask) | (value & mask);
+            }
         }  // namespace detail
 
         typedef struct Size {

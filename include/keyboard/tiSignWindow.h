@@ -114,6 +114,7 @@ namespace textinput {
                 CellPhoneSignAllAnmPane(nw4r::lyt::Pane* pane, nw4rmanager::AnmObserver* observer) : AnmPane(pane, observer) { mKeyType = 0; }
                 virtual void init() override { mCurrAnimId = 0; }          // 0x0C
                 virtual void onAnmEvent(AnmPaneEvent paneEvent) override;  // 0x10
+                virtual ~CellPhoneSignAllAnmPane() {}                      // 0x20
             };
 
             class CellPhoneSignScrollAnmPane : public AnmPane {
@@ -121,12 +122,14 @@ namespace textinput {
                 CellPhoneSignScrollAnmPane(nw4r::lyt::Pane* pane, nw4rmanager::AnmObserver* observer) : AnmPane(pane, observer) { mKeyType = 1; }
                 virtual void init() override { mCurrAnimId = 0; };         // 0x0C
                 virtual void onAnmEvent(AnmPaneEvent paneEvent) override;  // 0x10
+                // virtual ~CellPhoneSignScrollAnmPane() {}                   // 0x20
             };
             class CellPhoneSignButtonPane : public AnmPane {
             public:
                 CellPhoneSignButtonPane(nw4r::lyt::Pane* pane, nw4rmanager::AnmObserver* observer) : AnmPane(pane, observer) { mKeyType = 2; }
                 virtual void init() override { mCurrAnimId = 0; };         // 0x0C
                 virtual void onAnmEvent(AnmPaneEvent paneEvent) override;  // 0x10
+                virtual ~CellPhoneSignButtonPane() {}                      // 0x20
             };
 
             class Sample : public LayoutByNW4R {

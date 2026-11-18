@@ -39,7 +39,7 @@ namespace textinput {
 
                 Base(Manager* manager) : mpMgr(manager) {}
 
-                virtual ~Base() override;                                           // 0x08
+                // virtual ~Base() override;                                           // 0x08
                 virtual void create(MEMAllocator* allocator) override;              // 0x0C
                 virtual void init() override;                                       // 0x10
                 virtual void updateFromReceiver(u32 command, void* data) override;  // 0x1C
@@ -131,6 +131,7 @@ namespace textinput {
                 virtual void onAnmEvent(AnmPaneEvent paneEvent) override;  // 0x10
             };
 
+            struct PaneNameNormalAnimationKey;
             class LayoutByNW4R : public Base, public nw4rmanager::Layout {
             public:
                 LayoutByNW4R(Manager* manager, nw4r::lyt::MultiArcResourceAccessor* resAccessor, const char* layoutBinName, EventObserver* event)
@@ -142,7 +143,7 @@ namespace textinput {
                 virtual void updateFromReceiver(u32 command, void* data) override;  // 0x1C
                 virtual void onClose() override;                                    // 0x6C
                 virtual void onKey(u32, void*) override;                            // 0x20
-                virtual void setLanguage(Language) override;                        // 0x28
+                virtual void setLanguage(Language newLang) override;                // 0x28
                 virtual void update() override;                                     // 0x30
                 virtual void onActive() override;                                   // 0x34
                 virtual void calc() override;                                       // 0x38

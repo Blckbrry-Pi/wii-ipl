@@ -16,12 +16,14 @@ namespace textinput {
 
         void changeCapsLock(const u8& arg);
 
-        bool isHoldingShift() const {
-            return isHWPressedShift() || isPressedShiftB();
-        }
+        bool isHoldingShift() const { return isHWPressedShift() || isPressedShiftB(); }
+        u8 isCapsLock() const { return mbCapsLock; }
         u8 isHWPressedShift() const { return mbPressedShift; }
         u8 isPressedShiftB() const { return mbPressedShiftB; }
+
+        void setPressedShiftB(const u8 arg) { mbPressedShiftB = arg; }
         void setHWPressedShift(const u8& arg) { mbPressedShift = arg; }
+        void setCapsLock(const u8& arg) { mbCapsLock = arg; }
 
         class Singleton {
         public:
@@ -32,7 +34,7 @@ namespace textinput {
         };
 
     private:
-        u8 mbCpasLock : 1;       // 0x00
+        u8 mbCapsLock : 1;       // 0x00
         u8 mbPressedShift : 1;   // 0x00
         u8 mbPressedShiftB : 1;  // 0x00
     };

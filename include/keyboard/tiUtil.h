@@ -14,9 +14,17 @@ namespace textinput {
 
         wchar_t HankakuToZenkaku(wchar_t ch);
 
+        // Toggles dakuten on a Japanese Kana
+        // Also removes handakutens and converts to large kana beforehand
         wchar_t KBD_ConvertDakuten(wchar_t ch);
+        // Toggles handakuten on a Japanese Kana
+        // Also removes dakutens and converts to large kana beforehand
         wchar_t KBD_ConvertHandaku(wchar_t ch);
+        // Toggles between small and large Japanese Kana
+        // Also removes voicing marks (dakuten/handakuten) beforehand
         wchar_t KBD_ConvertSmall(wchar_t ch);
+        // Cycle voicing marks and size for Japanese Kana
+        // Normal -> with Dakuten -> with Handakuten -> Small -> Normal
         wchar_t KBD_ConvertAll(wchar_t ch);
 
         BOOL KBD_IsDakuten(wchar_t ch);

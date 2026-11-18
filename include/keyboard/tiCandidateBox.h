@@ -183,7 +183,12 @@ namespace textinput {
             void SetFocusedText(s32 pane) { mnFocusedIdx = pane; }
             s32 GetFocusedText() { return mnFocusedIdx; }
             f32 GetWidthScale_() const { return 608.0f / mfScreenWidth; }
-            f32 GetMargin_() const { return mfScreenWidth > 700.0f ? 10.0f : 20.0f; }
+            f32 GetMargin_() const {
+                if (mfScreenWidth > 700.0f)
+                    return 10.0f;
+                else
+                    return 20.0f;
+            }
             s32 GetNextPageIdx_(s32 page) const;
             s32 GetPrevPageIdx_(s32 page) const;
             s32 GetDispNum() const;
@@ -319,7 +324,7 @@ namespace textinput {
             virtual u16 getScroll() { return mTextArea.GetDispOffset(); }                    // 0x100
             virtual bool isInScroll() { return mTextArea.IsScrolling(); }                    // 0x104
             virtual void setActive(bool active);                                             // 0x108
-            virtual bool isActive() const;                                                   // 0x10C
+            virtual bool isActive() const { return mbActive; }                               // 0x10C
             virtual void setSelectedTextPane(int pane) { mTextArea.SetSelectedText(pane); }  // 0x110
             virtual void setFocusedTextPane(int pane) { mTextArea.SetFocusedText(pane); }    // 0x114
             virtual int getFocusedTextPane() { return mTextArea.GetFocusedText(); }          // 0x118
