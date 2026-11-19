@@ -1029,12 +1029,12 @@ src/keyboard/tiSignWindow.cpp:
 	.sdata      start:0x816C6B00 end:0x816C6B08
 
 src/keyboard/tiString.cpp:
-	.text       start:0x814317D8 end:0x81432D64
+	.text       start:0x814317D8 end:0x81432C1C
 	.data       start:0x8168FD98 end:0x8168FEB8
 
 src/keyboard/tiAtokString.cpp:
 	.bss        start:0x810C65F0 end:0x810CAE10
-	.text       start:0x81432D64 end:0x814356EC
+	.text       start:0x81432C1C end:0x814356EC
 	.data       start:0x8168FEB8 end:0x81690000
 
 src/keyboard/tiTextDrawer.cpp:
@@ -1105,7 +1105,7 @@ src/keyboard/MyTiInputForm.cpp:
 
 src/keyboard/MyTiLetterForm.cpp:
 	.text       start:0x81444DA0 end:0x81445B48
-	.rodata     start:0x8163FA80 end:0x8163FD50
+	.rodata     start:0x8163FA80 end:0x8163FD90
 	.data       start:0x816990E0 end:0x81699558
 	.sdata2     start:0x816C45C0 end:0x816C45E0
 	.sdata      start:0x816C6C28 end:0x816C6C70
@@ -1125,14 +1125,14 @@ src/keyboard/tiGUIManager.cpp:
 
 src/keyboard/tiHKBManager.cpp:
 	.bss        start:0x810CB3D8 end:0x810CB4E0
-	.text       start:0x81447930 end:0x814490D4
+	.text       start:0x81447930 end:0x81449114
 	.ctors      start:0x81636420 end:0x81636424
 	.data       start:0x81699760 end:0x81699778
 
 src/keyboard/tiHwKeyboard.cpp:
 	.bss        start:0x810CB4E0 end:0x810CB4F0
-	.text       start:0x814490D4 end:0x8144A308
-	.rodata     start:0x8163FD50 end:0x8163FE40
+	.text       start:0x81449114 end:0x8144A308
+	.rodata     start:0x8163FD90 end:0x8163FE40
 	.data       start:0x81699778 end:0x81699898
 	.sdata2     start:0x816C4608 end:0x816C4618
 	.sdata      start:0x816C6C70 end:0x816C6C78

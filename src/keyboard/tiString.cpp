@@ -117,6 +117,9 @@ namespace textinput {
             wmemset(mpszString, L'\0', muMaxLength);
             muLength = 0;
         }
+        u32 StringBase::wcsLen(const wchar_t* wcStr) {
+            return wcslen(wcStr);
+        }
         wchar_t StringBase::getLastWChar() {
             return muLength - 1 >= 0 ? mpszString[muLength - 1] : L'\0';
         }
@@ -131,11 +134,11 @@ namespace textinput {
             string[1] = L'\0';
             string[0] = L'\0';
             if (mTranslateMode == TM_ROMAJI_HIRAGANA || mTranslateMode == TM_ROMAJI_KATAKANA) {
-                mKanaStream.mBuf[4] = L'\0';
-                mKanaStream.mBuf[3] = L'\0';
-                mKanaStream.mBuf[2] = L'\0';
-                mKanaStream.mBuf[1] = L'\0';
-                mKanaStream.mBuf[0] = L'\0';
+                mKanaBuf[4] = L'\0';
+                mKanaBuf[3] = L'\0';
+                mKanaBuf[2] = L'\0';
+                mKanaBuf[1] = L'\0';
+                mKanaBuf[0] = L'\0';
 
                 if (ch == L'\n' && KPRLookAhead(&mKanaStream.mQueue, NULL, 0) != 0) {
                     len = KPRPutChar(&mKanaStream.mQueue, L'\xFFFF');
@@ -145,20 +148,42 @@ namespace textinput {
                 for (i = 0; i < len; i++) {
                     string[i] = KPRGetChar(&mKanaStream.mQueue);
                 }
-                KPRLookAhead(&mKanaStream.mQueue, mKanaStream.mBuf, 5);
+                KPRLookAhead(&mKanaStream.mQueue, mKanaBuf, 5);
                 return len;
             } else if (mTranslateMode == TM_ROMAJI_KANAFIX) {
-                // TODO: MWCC optimizer gave up or something here
-                len = 0;
-                string[len] = L'\0';
-                while (len < 1) {
-                    string[len++] = ch;
-                    if (ch == L'\n')
-                        break;
+                // TODO: Make MWCC's optimizer give up harder for non-korea
+                wchar_t converted = HangulStream::QwertyToHangul(ch);
+                u32 len = 0;
+                if (converted == ch) {
+                    mHangulStream.Flush();
+                    wchar_t translatedJamo = mHangulStream.Get();
+
+                    string[len] = translatedJamo;
+                    if (translatedJamo != L'\0')
+                        len++;
+
+                    if (ch != L'\n' || translatedJamo == L'\0') {
+                        string[len++] = ch;
+                    }
+                    string[len] = L'\0';
+
+                    mKanaBuf[0] = L'\0';
+                    return len;
+                } else {
+                    mHangulStream.Put(converted);
+
+                    wchar_t translatedJamo = mHangulStream.Get();
+
+                    string[len] = translatedJamo;
+                    if (translatedJamo != L'\0')
+                        len++;
+                    string[len] = L'\0';
+
+                    mKanaBuf[0] = mHangulStream.GetUnfixed(0);
+                    mKanaBuf[1] = L'\0';
+                    return len;
                 }
-                string[len] = L'\0';
-                mKanaStream.mBuf[0] = L'\0';
-                return len;
+
             } else {
                 string[0] = (wchar_t)ch;
                 string[1] = L'\0';
@@ -192,7 +217,8 @@ namespace textinput {
         }
         void Decolated::clearKana() {
             KPRClearQueue(&mKanaStream.mQueue);
-            mKanaStream.mBuf[0] = L'\0';
+            mHangulStream.Clear();
+            mKanaBuf[0] = L'\0';
         }
         void Decolated::inputString(const wchar_t* string) {
             if (string == NULL)
@@ -255,7 +281,15 @@ namespace textinput {
                     mKanaStream.mQueue.iCount--;
 
                     u8 lookaheadIdx = KPRLookAhead(&mKanaStream.mQueue, NULL, 0);
-                    mKanaStream.mBuf[lookaheadIdx] = L'\0';
+                    mKanaBuf[lookaheadIdx] = L'\0';
+                    return;
+                }
+            }
+            if (mTranslateMode == TM_ROMAJI_KANAFIX) {
+                if (mHangulStream.GetLength() != 0) {
+                    mHangulStream.BackSpace();
+                    mKanaBuf[0] = mHangulStream.GetUnfixed(0);
+                    mKanaBuf[1] = L'\0';
                     return;
                 }
             }
@@ -453,9 +487,17 @@ namespace textinput {
         }
 
         void Decolated::initKanaConverter() {
-            KPRInitQueue(&(this->mKanaStream).mQueue);
-            KPRSetMode(&(this->mKanaStream).mQueue, KPR_MODE_NONE);
-            mKanaStream.mBuf[0] = L'\0';
+#ifdef VERSION_43J
+            KPRInitRegionJP();
+            KPRInitQueue(&mKanaStream.mQueue);
+            KPRSetMode(&mKanaStream.mQueue, KPR_MODE_JP_ROMAJI_HIRAGANA);
+#else
+            KPRInitQueue(&mKanaStream.mQueue);
+            KPRSetMode(&mKanaStream.mQueue, KPR_MODE_NONE);
+
+#endif
+            mKanaBuf[0] = L'\0';
+            mHangulStream.Clear();
             switch (mTranslateMode) {
                 case TM_ROMAJI_HIRAGANA:
                     mKanaStream.mQueue.mode = KPR_MODE_JP_ROMAJI_HIRAGANA;

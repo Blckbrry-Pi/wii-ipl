@@ -445,6 +445,9 @@ namespace textinput {
             }
 
             wchar_t Base::convertToZiCellphoneInput_(wchar_t ziCh) {
+#if !(defined(VERSION_43U) | defined(VERSION_43E))
+                return ziCh;
+#endif
                 switch (ziCh) {
                     case L'1':
                         return 0xEFF1;
@@ -656,6 +659,9 @@ namespace textinput {
                     setVisible("W_spaceBT_JP", false);
                     setVisible("W_CPkey_09", false);
                     setVisible("W_CPkey_11", false);
+#if defined(VERSION_43J) | defined(VERSION_43K)
+                    setPredictLanguageButton(false);
+#endif
                 }
                 changeInputMode(mInputMode);
                 setLangKeyActive(true);

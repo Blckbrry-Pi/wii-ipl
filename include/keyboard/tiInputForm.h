@@ -66,13 +66,23 @@ namespace textinput {
         class DeadKeyStream {
         public:
             DeadKeyStream() {
+#if defined(VERSION_43U)
                 KPRInitRegionUS();
+#elif defined(VERSION_43E)
+                KPRInitRegionEU();
+#elif defined(VERSION_43J)
+                KPRInitRegionJP();
+#endif
                 init();
             }
 
             void init() {
                 KPRInitQueue(&mKPRQueue);
+#if defined(VERSION_43U) | defined(VERSION_43E)
                 KPRSetMode(&mKPRQueue, KPR_MODE_DEADKEY);
+#else
+                KPRSetMode(&mKPRQueue, KPR_MODE_NONE);
+#endif
             }
 
             void putSpace(wchar_t ch) {
@@ -421,6 +431,12 @@ namespace textinput {
                     return true;
                 else
                     return false;
+            }
+            void flushZiPredicted_() {
+                if (hasZiPredicted_()) {
+                    mpZiString->setCurrentWord(NULL);
+                    mpZiString->update();
+                }
             }
             bool hasZiCandidates_() const;
 

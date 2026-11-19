@@ -35,6 +35,11 @@ namespace textinput {
                     INPUT_MODE_ABC_UPPER = 2,
                     INPUT_MODE_NUMERIC = 3,
                     INPUT_MODE_ABC_LOWER_JP = 4,
+#ifdef VERSION_43J
+                    INPUT_MODE_UNK_VARIABLE = 2,
+#else
+                    INPUT_MODE_UNK_VARIABLE = 2,
+#endif
                 };
 
                 Base(Manager* manager) : mpMgr(manager) {}

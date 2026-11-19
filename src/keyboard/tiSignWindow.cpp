@@ -281,6 +281,11 @@ namespace textinput {
                 throwReleaseForAll();
                 getPaneManager()->init();
 
+#ifdef VERSION_43J
+                if (meLanguage == JP) {
+                    sendCommand(6, NULL);
+                }
+#endif
                 if (meLanguage == KR || meLanguage == CN) {
                     sendCommand(6, NULL);
                 }

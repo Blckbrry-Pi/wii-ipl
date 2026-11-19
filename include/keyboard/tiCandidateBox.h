@@ -51,6 +51,13 @@ namespace textinput {
             // This candidate thing is a bit different from the dwarf
             class Candidates {
             public:
+#if defined(VERSION_43J)
+                typedef wchar_t Prediction[61];
+#elif defined(VERSION_43K)
+                typedef wchar_t Prediction[16];
+#else
+                typedef wchar_t Prediction[64];
+#endif
                 Candidates() : mNumCandidate(0) {}
 
                 void resetCandidate();
@@ -58,8 +65,12 @@ namespace textinput {
                 void updateCandidate();
 
             public:
-                int mNumCandidate;              // 0x00
-                wchar_t szwcPredicted[40][64];  // 0x04
+                int mNumCandidate;  // 0x00
+#if defined(VERSION_43K)
+                Prediction szwcPredicted[20];  // 0x04
+#else
+                Prediction szwcPredicted[40];  // 0x04
+#endif
             };
 
             CandidateBoxCaller() : mpCandidateBox(NULL) {}

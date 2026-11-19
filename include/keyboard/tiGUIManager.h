@@ -270,6 +270,7 @@ namespace textinput {
         protected:
             // Kind of hacky, but fixes setAllBoundingBoxComponentTriggerTarget.
             // Maybe had a debug check in between getting and returning?
+            // TODO: Change this hack to a stripped assert in nw4r::ut::List_GetSize
             u16 getNumPCs_() const {
                 u16 pcCount = nw4r::ut::List_GetSize(&mPaneComponents);
                 return pcCount;

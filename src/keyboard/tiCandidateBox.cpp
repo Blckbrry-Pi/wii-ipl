@@ -185,7 +185,6 @@ namespace textinput {
         }
 
         void CandidateBoxCaller::Candidates::updateCandidate() {
-            typedef wchar_t Prediction[0x40];
             Prediction* predictions = szwcPredicted;
             for (u32 i = 0; i < mNumCandidate; i++) {
                 // U+0020 Space, U+3000 Ideographic Space

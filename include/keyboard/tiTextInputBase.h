@@ -107,10 +107,9 @@ namespace textinput {
 
     class Base {
     public:
-        virtual ~Base() {}
-
-        virtual void create(MEMAllocator* allocator) {}
-        virtual void init() {}
+        virtual ~Base() {}                               // 0x08
+        virtual void create(MEMAllocator* allocator) {}  // 0x0C
+        virtual void init() {}                           // 0x10
     };
 
     class CommandSender;
@@ -221,12 +220,12 @@ namespace textinput {
     public:
         CommandSender() : mpCommandReceiver(NULL) {}
 
-        virtual void setCommandReceiver(CommandReceiver* cmdRecv);
-        virtual void sendCommand(u32 command, void* data) {
+        virtual void setCommandReceiver(CommandReceiver* cmdRecv);  // 0x14
+        virtual void sendCommand(u32 command, void* data) {         // 0x18
             if (mpCommandReceiver)
                 mpCommandReceiver->onCommand((CommandReceiver::INPUT_COMMAND)command, data);
         }
-        virtual void updateFromReceiver(u32 command, void* data) {}
+        virtual void updateFromReceiver(u32 command, void* data) {}  // 0x1C
 
         nw4r::ut::Link mLink;  // 0x04
 

@@ -1,6 +1,8 @@
 #ifndef TEXTINPUT_STRING_BASE_H
 #define TEXTINPUT_STRING_BASE_H
 
+#include "tiKoreanInput.h"
+
 #include <revolution/kpr.h>
 #include <revolution/mem/allocator.h>
 #include <revolution/types.h>
@@ -12,30 +14,32 @@ namespace textinput {
             StringBase(u16 maxLength)
                 : muMaxLength(maxLength), muLength(0), mpszString(NULL), mpszTmpString(NULL), mwcCandidate(0), mpAllocator(NULL) {}
 
-            virtual ~StringBase();
+            virtual ~StringBase();  // 0x08
 
-            virtual void create(MEMAllocator* allocator);
-            virtual void pushBack(wchar_t ch);
-            virtual void popBack();
-            virtual void clear();
-            virtual u16 getLength() const { return muLength; }
-            virtual bool append(const wchar_t* string);
-            virtual bool insert(u16 pos, const wchar_t* string);
-            virtual void remove(u16 pos, u16 len);
-            virtual void replace(u16 pos, u16 len, const wchar_t* string);
+            virtual void create(MEMAllocator* allocator);                   // 0x0C
+            virtual void pushBack(wchar_t ch);                              // 0x10
+            virtual void popBack();                                         // 0x14
+            virtual void clear();                                           // 0x18
+            virtual u16 getLength() const { return muLength; }              // 0x1C
+            virtual bool append(const wchar_t* string);                     // 0x20
+            virtual bool insert(u16 pos, const wchar_t* string);            // 0x24
+            virtual void remove(u16 pos, u16 len);                          // 0x28
+            virtual void replace(u16 pos, u16 len, const wchar_t* string);  // 0x2C
 
-            virtual void set(const wchar_t* string);
-            virtual void setAt(u16 pos, wchar_t ch);
+            virtual void set(const wchar_t* string);  // 0x30
+            virtual void setAt(u16 pos, wchar_t ch);  // 0x34
 
-            virtual void setLength(u16);
+            virtual void setLength(u16);  // 0x38
 
-            virtual wchar_t* getWCString() const { return mpszString; }
+            virtual wchar_t* getWCString() const { return mpszString; }  // 0x3C
 
-            virtual void setCandidate(wchar_t candidate) { mwcCandidate = candidate; }
-            virtual wchar_t getCandidate() const { return mwcCandidate; }
-            virtual bool hasCandidate() const { return mwcCandidate != L'\0'; }
+            virtual void setCandidate(wchar_t candidate) { mwcCandidate = candidate; }  // 0x40
+            virtual wchar_t getCandidate() const { return mwcCandidate; }               // 0x44
+            virtual bool hasCandidate() const { return mwcCandidate != L'\0'; }         // 0x48
 
-            virtual wchar_t getLastWChar();
+            virtual wchar_t getLastWChar();  // 0x4C
+
+            static u32 wcsLen(const wchar_t* wcStr);
 
         protected:
             u16 muMaxLength;  // 0x04
@@ -52,8 +56,6 @@ namespace textinput {
         class KanaStream {
         public:
             KPRQueue mQueue;
-            u16 unk_0x18;
-            wchar_t mBuf[5];
         };
 
         class Decolated : public StringBase {
@@ -110,15 +112,18 @@ namespace textinput {
             virtual void converSmall();
             virtual bool atTheBeginningOfASentence();
             virtual void initKanaConverter();
-            virtual wchar_t* getKanaBuffer() { return mKanaStream.mBuf; }
+            virtual wchar_t* getKanaBuffer() { return mKanaBuf; }
             virtual bool isKanaFix() const {
                 if (mTranslateMode == TM_ROMAJI_KANAFIX)
-                    return true;
+                    return mHangulStream.GetLength() == 0;
                 return KPRLookAhead(&mKanaStream.mQueue, NULL, 0) == 0;
             }
             virtual void confirmKana();
             virtual void clearKana();
-            virtual void EnableKSXFilter(bool) {}
+            virtual void EnableKSXFilter(bool enabled) {
+                mHangulStream.SetKSXFilterEnabled(enabled);
+                mHangulStream.SetDefaultKSXFilter();
+            }
 
             TranslateMode getTranslateMode() const { return mTranslateMode; }
             void setTranslateMode(TranslateMode translateMode);
@@ -132,6 +137,8 @@ namespace textinput {
             bool mbIsSustaining;           // 0x20
             TranslateMode mTranslateMode;  // 0x24
             KanaStream mKanaStream;        // 0x28
+            HangulStream mHangulStream;    // 0x40
+            wchar_t mKanaBuf[5];           // 0x42 (U/E/J)
         };
     }  // namespace tistring
 }  // namespace textinput

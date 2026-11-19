@@ -94,6 +94,9 @@ namespace textinput {
                 doBeforeDrawProcess(drawStr, pos, drawInfo);
                 if (cursorPos != 0 && cursorPos->uCursorPos == pos) {
                     procCursor(cursorPos, startLine + (cursorY != GetCursorY()));
+#ifdef VERSION_43K
+                    doBeforeDrawProcess(drawStr, pos, drawInfo);
+#endif
                 }
                 if (*curr == L'\n') {
                     doLineFeed();
@@ -146,6 +149,9 @@ namespace textinput {
 
                 if (cursorPos != NULL && cursorPos->uCursorPos == mCurrPos) {
                     procCursor(cursorPos, 0);
+#ifdef VERSION_43K
+                    doBeforeDrawProcess(mpDrawString, mCurrPos, drawInfo);
+#endif
                 }
                 if (*curr == L'\n') {
                     nw4r::ut::Color origColor = GetTextColor();

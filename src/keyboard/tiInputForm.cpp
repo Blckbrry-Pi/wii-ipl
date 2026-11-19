@@ -10,6 +10,14 @@
 #include <cwchar>
 #include <new>
 
+// NOTE: when working on this file, it might be helpful to replace the
+// GXColor front = {255, 255, 255, 0};
+// with
+// GXColor front = {/*255, 255, 255, 0*/};
+// in
+// `libs/NW4R/include/nw4r/db/assert.h`
+// This prevents .sdata2 alignment problems
+
 namespace textinput {
     namespace inputform {
 
@@ -40,7 +48,7 @@ namespace textinput {
         static nw4r::ut::Color csZiStringColorRight(0x32, 0x64, 0x32, 0xFF);
         static nw4r::ut::Color csUnderlateColor(0x64, 0xC8, 0xC8, 0xFF);
         static nw4r::ut::Color csUnInputedWCharColorSpace(0xFF, 0x14, 0x14, 0xFF);
-        f32 lbl_81698D1C = 0.0f;
+        f32 sfKeyPulseTimer = 0.0f;
 
         extern const VisiblePane csVisiblePaneUEJ;
         extern const VisiblePane csVisiblePaneKOR;
@@ -506,7 +514,9 @@ namespace textinput {
                     }
 
                     if (getCurrentString(false) == mpUnfixString) {
-                        mpUnfixString->isConverting();
+                        if (mpUnfixString->isConverting()) {
+                            mpUnfixString->confirmAll();
+                        }
                     }
 
                     while (true) {
@@ -571,8 +581,8 @@ namespace textinput {
 
                         bool useAtok = !mbPredictOn ? false : mePredictMode == PM_Atok;
                         if (useAtok) {
-                            currStringModes.isDirect = false;
-                            currStringModes.isHiragana = false;
+                            currStringModes.isDirect = mpUnfixString->getUnk_0x081();
+                            currStringModes.isHiragana = mpUnfixString->getUnk_0x082();
                             mpUnfixString->setFixMode(pcKeyboardModes.isDirect);
                             mpUnfixString->changeKanaMode(pcKeyboardModes.isHiragana);
                         }
@@ -587,7 +597,9 @@ namespace textinput {
                     }
 
                     if (getCurrentString(false) == mpUnfixString) {
-                        mpUnfixString->isConverting();
+                        if (mpUnfixString->isConverting()) {
+                            mpUnfixString->confirmAll();
+                        }
                     }
 
                     while (true) {
@@ -676,7 +688,9 @@ namespace textinput {
                             mpManager->getCellPhoneKeyboard()->resetHoldingButton();
                         }
                     } else {
-                        if (!mpUnfixString->isConverting()) {
+                        if (mpUnfixString->isConverting()) {
+                            mpUnfixString->unselect();
+                        } else {
                             mpUnfixString->backSpace();
                             if (mpManager->getCellPhoneKeyboard() != NULL) {
                                 mpManager->getCellPhoneKeyboard()->resetHoldingButton();
@@ -725,16 +739,16 @@ namespace textinput {
                         mpUnfixString->resetRelation();
                         updateCandidateState_();
 
-                        bool cVar15;
+                        bool canLineFeed;
                         if (mpManager->getToolBar()->isQwerty()) {
-                            cVar15 = mpManager->getPCKeyboard()->isLineFeedEnabled();  // 0xFC
+                            canLineFeed = mpManager->getPCKeyboard()->isLineFeedEnabled();
                         } else {
-                            cVar15 = mpManager->getCellPhoneKeyboard()->isLineFeedEnabled();  // 0xE0
+                            canLineFeed = mpManager->getCellPhoneKeyboard()->isLineFeedEnabled();
                         }
                         bool bVar1 = true;
                         if (mpString->isKanaFix()) {
                             bool bVar2 = false;
-                            if (cVar15 && muLimitRowNum >= getLine() + 1U) {
+                            if (canLineFeed && muLimitRowNum >= getLine() + 1U) {
                                 bVar2 = true;
                             }
                             if (!bVar2) {
@@ -755,8 +769,10 @@ namespace textinput {
                             mpString->getCursorPos();
                             if (meLanguage == CN) {
                                 if (hasZiPredicted_()) {
+#if defined(VERSION_43U) | defined(VERSION_43E)
                                     mpZiString->setCurrentWord(NULL);
                                     mpZiString->update();
+#endif
                                 }
                             }
                         } else {
@@ -902,13 +918,22 @@ namespace textinput {
                     return;
                 }
                 case INPUT_COMMAND_17:
-                    if (data != NULL && *(bool*)data) {
+                    if (data == NULL)
+                        break;
+                    if (*(bool*)data) {
                         mpUnfixString->confirm(NULL);
                         onCommand(INPUT_COMMAND_6, NULL);
 
                         CandidateBoxCaller::resetCandidate();
                         CandidateBoxCaller::updateCandidate();
                     }
+#ifdef VERSION_43J
+                    else {
+                        if (meDestination == DST_JP) {
+                            meInputMode = IM_ROMAN;
+                        }
+                    }
+#endif
                     break;
                 case INPUT_COMMAND_21:
                     if (mbPredictOn) {
@@ -916,7 +941,7 @@ namespace textinput {
                             if (mpUnfixString->isConverting()) {
                                 mpUnfixString->commitPredicted(*(u32*)data);
                             } else {
-                                wchar_t predictedText[0x40];
+                                candidatebox::CandidateBoxCaller::Candidates::Prediction predictedText;
                                 mpUnfixString->getPredicted(*(u32*)data, predictedText);
                                 mpString->getCursorPos();
                                 mpString->inputString(predictedText, tistring::Decolated::TM_NONE);
@@ -925,7 +950,7 @@ namespace textinput {
                                 mpUnfixString->commitPredicted(*(u32*)data);
                             }
                         } else {
-                            wchar_t predictedText[0x40];
+                            candidatebox::CandidateBoxCaller::Candidates::Prediction predictedText;
                             mpZiString->getPredicted(*(u32*)data, predictedText);
                             mpString->getCursorPos();
                             mpString->inputString(predictedText);
@@ -1141,7 +1166,6 @@ namespace textinput {
                     return;
                 case INPUT_COMMAND_39:
                     mDKStream.clearQueue();
-                    // *(u8*)data = 39;
                     return;
                 case INPUT_COMMAND_47:
                     return;
@@ -1174,7 +1198,7 @@ namespace textinput {
             if (!mbPredictOn)
                 return;
 
-            wchar_t auStack_90[0x40];
+            candidatebox::CandidateBoxCaller::Candidates::Prediction auStack_90;
 
             if (mePredictMode == PM_Atok) {
                 if (mpUnfixString->hasConfirmedString() != 0) {
@@ -1286,7 +1310,7 @@ namespace textinput {
 
             mScrollAnm.calc();
 
-            f32 sinVal = nw4r::math::SinDeg(lbl_81698D1C);
+            f32 sinVal = nw4r::math::SinDeg(sfKeyPulseTimer);
             mSelectedColor.r = COLOR_NO_HOLD_R;
             mSelectedColor.g = COLOR_NO_HOLD_G;
             mSelectedColor.b = COLOR_NO_HOLD_B;
@@ -1303,12 +1327,12 @@ namespace textinput {
 
                 // f32 sinVal = ;
                 mSelectedColor.a = util::hermiteInterporation(mfSustainTimer, 0, COLOR_SUSTAIN_A, 0, SUSTAIN_REPEAT_FRAMES, COLOR_NO_HOLD_A, 0) +
-                                   nw4r::math::SinDeg(lbl_81698D1C) * 20.0f;
+                                   nw4r::math::SinDeg(sfKeyPulseTimer) * 20.0f;
             }
-            f32 old = lbl_81698D1C;
+            f32 old = sfKeyPulseTimer;
             // muCursorTimer += 8;
             calcCursorTimer();
-            lbl_81698D1C = old + 2.0f;
+            sfKeyPulseTimer = old + 2.0f;
         }
         void Base::calcCursorTimer() {
             muCursorTimer += 8;
@@ -1558,53 +1582,119 @@ namespace textinput {
             bool isOnCursor = false;
 
             nw4r::ut::Color savedTextColor = CharWriter::GetTextColor();  // `savedColor`
-
             SetupGX();
+
             wchar_t* kanaBuffer = mpString->getKanaBuffer();  // `kanaBuffer`
-            wchar_t candidateCh = mpString->getCandidate();   // `candidate`
-            if (mbPredictOn && mePredictMode != PM_Atok) {
-                const wchar_t* currSelected = mpZiString->getCurrentSelected();
+            bool isUnderlined = false;
+            wchar_t candidateCh = mpString->getCandidate();  // `candidate`
+            if (mbPredictOn) {
+#if defined(VERSION_43J)
+                if (mePredictMode == PM_Atok && meDestination == DST_JP) {
+                    nw4r::ut::Color colorA = nw4r::ut::Color::WHITE;
+                    nw4r::ut::Color colorB = nw4r::ut::Color::WHITE;
 
-                if (getPredictMode() == PM_Cn) {
-                    if (mbCursorSelected) {
-                        mbZuSelected = true;
-                    }
+                    tistring::WithAtok::DrawInfo drawString;
+                    mpUnfixString->getDrawString(drawString);
 
-                    if (!(mbCursorSelected | mbZuSelected)) {
-                        currSelected = mpZiString->getCurrentInput();
-                    }
-                }
-                if (currSelected != NULL) {
-                    u32 i = 0;
-                    SetTextColor(csZiStringColorLeft.ToU32());
-                    for (; currSelected[i] != 0; i++) {
-                        if (!(mbCursorSelected | mbZuSelected) && (u16)i == mpZiString->getInputStringLength()) {
-                            isOnCursor = true;
-                            cursorPos->fCursorX = GetCursorX();
-                            cursorPos->fCursorY = GetCursorY();
+                    const wchar_t* str = drawString.unk_0x00;
+                    kanaBuffer = mpUnfixString->getKanaBuffer();
+
+                    if (str) {
+                        s16 someNum = 0;
+                        if (mpUnfixString->hasCandidate()) {
+                            candidateCh = mpUnfixString->getCandidate();
                         }
-                        if (getPredictMode() != PM_Cn && mpZiString->getInputStringLength() <= (u16)i) {
-                            if (mbCursorSelected | mbZuSelected) {
-                                SetTextColor(csZiStringColorRight.ToU32());
-                            } else {
-                                SetTextColor(csZiStringNonSelectColorRight.ToU32());
+
+                        while (*str != L'\0') {
+                            if (mpUnfixString->hasCandidate() && str[1] == L'\0') {
+                                str++;
+                                continue;
                             }
-                        }
-                        if (currSelected[i] == 0xFFFE) {  // Pad key marker?
-                            SetTextColor(csZiStringColorLeft.ToU32());
-                        }
+                            DrawInfo drawInfo;
+                            drawInfo.ch = *str;
+                            calcRect(drawInfo);
 
-                        DrawInfo drawInfo;
-                        drawInfo.ch = currSelected[i];
-                        calcRect(drawInfo);
+                            if (GetCursorX() + drawInfo.rect.GetWidth() >= mRect.GetWidth()) {
+                                doLineFeed();
+                            }
 
-                        if (GetCursorX() + drawInfo.rect.GetWidth() >= mRect.GetWidth()) {
-                            doLineFeed();
+                            if (drawString.unk_0x04 <= someNum && drawString.unk_0x06 > someNum) {
+                                f32 left = drawInfo.rect.left + GetCursorX();
+                                f32 top = drawInfo.rect.top + GetCursorY();
+                                f32 right = drawInfo.rect.right + GetCursorX();
+                                f32 bottom = GetFontHeight() + GetCursorY();
+                                GXColor boxColor = {0xFF, 0xFA, 0x64, 0xFF};
+                                debug::drawBox_(left, top, right, bottom, 0.0f, 1.0f, boxColor);
+                                GXColor lineColor = {0xFF, 0x00, 0x00, 0xFF};
+                                debug::drawLine_(left, bottom, right, bottom, 0.0f, 18, lineColor);
+                                SetupGX();
+                                SetTextColor(nw4r::ut::Color(0xC8, 0x32, 0xFF, 0xFF));
+                            } else {
+                                if (drawString.unk_0x08) {
+                                    isUnderlined = true;
+                                    f32 left = drawInfo.rect.left + GetCursorX();
+                                    f32 top = drawInfo.rect.top + GetCursorY();
+                                    f32 right = drawInfo.rect.right + GetCursorX();
+                                    f32 bottom = GetFontHeight() + GetCursorY();
+                                    debug::drawLine_(left, bottom, right, bottom, 0.0f, 18, colorB);
+                                    SetupGX();
+                                }
+                                SetTextColor(colorA);
+                            }
+                            Print(*str);
+                            MoveCursorX(getLetterTracking());
+
+                            str++;
+                            someNum++;
                         }
-                        Print(currSelected[i]);
-                        MoveCursorX(getLetterTracking());
                     }
                 }
+#elif defined(VERSION_43U) | defined(VERSION_43E)
+                if (mePredictMode != PM_Atok) {
+                    const wchar_t* currSelected = mpZiString->getCurrentSelected();
+
+                    if (getPredictMode() == PM_Cn) {
+                        if (mbCursorSelected) {
+                            mbZuSelected = true;
+                        }
+
+                        if (!(mbCursorSelected | mbZuSelected)) {
+                            currSelected = mpZiString->getCurrentInput();
+                        }
+                    }
+                    if (currSelected != NULL) {
+                        u32 i = 0;
+                        SetTextColor(csZiStringColorLeft.ToU32());
+                        for (; currSelected[i] != 0; i++) {
+                            if (!(mbCursorSelected | mbZuSelected) && (u16)i == mpZiString->getInputStringLength()) {
+                                isOnCursor = true;
+                                cursorPos->fCursorX = GetCursorX();
+                                cursorPos->fCursorY = GetCursorY();
+                            }
+                            if (getPredictMode() != PM_Cn && mpZiString->getInputStringLength() <= (u16)i) {
+                                if (mbCursorSelected | mbZuSelected) {
+                                    SetTextColor(csZiStringColorRight.ToU32());
+                                } else {
+                                    SetTextColor(csZiStringNonSelectColorRight.ToU32());
+                                }
+                            }
+                            if (currSelected[i] == 0xFFFE) {  // Pad key marker?
+                                SetTextColor(csZiStringColorLeft.ToU32());
+                            }
+
+                            DrawInfo drawInfo;
+                            drawInfo.ch = currSelected[i];
+                            calcRect(drawInfo);
+
+                            if (GetCursorX() + drawInfo.rect.GetWidth() >= mRect.GetWidth()) {
+                                doLineFeed();
+                            }
+                            Print(currSelected[i]);
+                            MoveCursorX(getLetterTracking());
+                        }
+                    }
+                }
+#endif
             }
             if (meDestination == DST_JP && candidateCh != L'\0') {
                 DrawInfo drawInfo;
@@ -1617,6 +1707,13 @@ namespace textinput {
                 f32 b = GetFontHeight() + GetCursorY();
                 lbl_8169739C.a = muGlobalAlpha;
                 debug::drawBox_(l, t, r, b, 0.0f, 1.0f, lbl_8169739C);
+                if (isUnderlined) {
+#if defined(VERSION_43J)
+                    GXColor lineColor = {0x80, 0x80, 0x80, 0xFF};
+                    lineColor.a = muGlobalAlpha;
+                    debug::drawLine_(l, b, r, b, 0.0f, 18, lineColor);
+#endif
+                }
 
                 SetupGX();
 
@@ -1676,6 +1773,12 @@ namespace textinput {
                     f32 b = GetFontHeight() + GetCursorY();
                     lbl_81697398.a = muGlobalAlpha;
                     debug::drawBox_(l, t, r, b, 0.0f, 1.0f, lbl_81697398);
+                    if (isUnderlined) {
+#if defined(VERSION_43J)
+                        GXColor lineColor = {0x80, 0x80, 0x80, 0xFF};
+                        debug::drawLine_(l, b, r, b, 0.0f, 18, lineColor);
+#endif
+                    }
 
                     SetupGX();
 
@@ -1959,9 +2062,8 @@ namespace textinput {
                 mpString->inputChar(ch);
                 mpString->getCursorPos();
 
-                if (meLanguage == CN && hasZiPredicted_()) {
-                    mpZiString->setCurrentWord(NULL);
-                    mpZiString->update();
+                if (meLanguage == CN) {
+                    flushZiPredicted_();
                 }
             } else {
                 if (currString == mpZiString) {
@@ -1992,16 +2094,20 @@ namespace textinput {
                     mpString->inputChar(ch);
                     mpString->getCursorPos();
 
-                    if (meLanguage == CN && hasZiPredicted_()) {
-                        mpZiString->setCurrentWord(NULL);
-                        mpZiString->update();
+                    if (meLanguage == CN) {
+                        flushZiPredicted_();
                     }
                 } else {
                     currString->inputChar(ch);
                     if (meLanguage == KR) {
                         if (mpManager->getToolBar()->isQwerty()) {
                             currString = mpZiString;
+
+#if defined(VERSION_43U) | defined(VERSION_43E)
                             wchar_t predictedWord[0x40];
+#else
+                            wchar_t predictedWord[0x10];
+#endif
                             mpZiString->getPredicted(0, predictedWord);
 
                             if (wcslen(predictedWord) >= 2) {
@@ -2088,17 +2194,14 @@ namespace textinput {
                 mpString->getCursorPos();
 
                 if (meLanguage == CN) {
-                    if (hasZiPredicted_()) {
-                        mpZiString->setCurrentWord(NULL);
-                        mpZiString->update();
-                    }
+                    flushZiPredicted_();
                 }
             } else {
                 currString->inputChar(ch);
             }
-            if (ch == 0x20) {
+            if (ch == L' ') {
                 onSE(sound::SE_CHAR_DECIDE);
-            } else if (ch != 10) {
+            } else if (ch != L'\n') {
                 onSE(sound::SE_CHAR_INPUT);
             }
             meScrollFlag = SF_ScrollOn;
@@ -2106,6 +2209,13 @@ namespace textinput {
 
         void Base::onClose() {
             onCommand(INPUT_COMMAND_6, NULL);
+
+#ifdef VERSION_43J
+            if (meDestination == DST_JP && !mpUnfixString->isFix()) {
+                onCommand(INPUT_COMMAND_6, NULL);
+            }
+#endif
+
             CandidateBoxCaller::makeEmptyCandidate();
             dirtyDrawCache();
             dirtyCursorCache();
@@ -2212,6 +2322,7 @@ namespace textinput {
 
                 case HVK_UNK_0x01:
                     if (ptVar2 == mpUnfixString) {
+                        mpUnfixString->unselect();
                         updateCandidateState_();
                     }
                     break;
@@ -2515,7 +2626,7 @@ namespace textinput {
                 if (mpUnfixString->isConverting()) {
                     if (modifierState & KBD_HID_MOD_SHIFT) {
                         // s16 newIdx = mpUnfixString->getSelectedConverting();
-                        mpUnfixString->commitPredicted(mpUnfixString->getSelectedConverting());
+                        mpUnfixString->commitPredicted((s16)mpUnfixString->getSelectedConverting());
                         updateCandidateState_();
                         return;
                     } else if (!mpManager->getCandidateBox()->isInScroll()) {
@@ -2551,9 +2662,8 @@ namespace textinput {
                         mpString->getCursorPos();
                         mpString->inputChar(L'\n');
                         mpString->getCursorPos();
-                        if (meLanguage == CN && hasZiPredicted_()) {
-                            mpZiString->setCurrentWord(NULL);
-                            mpZiString->update();
+                        if (meLanguage == CN) {
+                            flushZiPredicted_();
                         }
                     }
                     currString->getCursorPos();
@@ -2631,9 +2741,8 @@ namespace textinput {
                         mpString->getCursorPos();
                         mpString->inputChar(L'\n');
                         mpString->getCursorPos();
-                        if (meLanguage == CN && hasZiPredicted_()) {
-                            mpZiString->setCurrentWord(NULL);
-                            mpZiString->update();
+                        if (meLanguage == CN) {
+                            flushZiPredicted_();
                         }
                     }
                     currString->getCursorPos();
@@ -2812,14 +2921,19 @@ namespace textinput {
 
         void Base::notifyChangeMode() {
             if (mePredictMode == PM_Atok) {
-                if ((mpManager->getToolBar()->isQwerty() && mpManager->getPCKeyboard()->isABC() &&
-                     mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) ||
-                    (!mpManager->getToolBar()->isQwerty() &&
-                     mpManager->getCellPhoneKeyboard()->getInputMode() == keyboard::cellphonetype::Base::INPUT_MODE_ABC_LOWER_JP)) {
-                    // Do nothing lol
+                // FIXME: Go back and test on US and EU
+                if (mpManager->getToolBar()->isQwerty() && mpManager->getPCKeyboard()->isABC() &&
+                    mpManager->getPCKeyboard()->getTranslateMode() == keyboard::pctype::Base::TM_00) {
+                    mpUnfixString->setUnk_0x080(true);
+                } else if (!mpManager->getToolBar()->isQwerty() &&
+                           mpManager->getCellPhoneKeyboard()->getInputMode() == keyboard::cellphonetype::Base::INPUT_MODE_UNK_VARIABLE) {
+                    mpUnfixString->setUnk_0x080(true);
+                } else {
+                    mpUnfixString->setUnk_0x080(false);
                 }
 
                 if (mpUnfixString->getInputStringLength() == 0) {
+                    mpUnfixString->updatePrediction();
                     updateCandidateState_();
                 }
             } else {

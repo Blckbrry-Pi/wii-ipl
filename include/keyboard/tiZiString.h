@@ -8,6 +8,69 @@
 
 namespace textinput {
     namespace tistring {
+#if defined(VERSION_43J) | defined(VERSION_43K)
+        class WithZi : public Decolated {
+        public:
+            enum LetterMode {
+                LETTER_MODE_TITLE = 0,
+                LETTER_MODE_LOWER,
+                LETTER_MODE_UPPER,
+                LETTER_MODE_INPUT,
+            };
+            enum PredictLanguage {
+                PREDICT_LANG_ENAM = 0,
+                PREDICT_LANG_FRCA,
+                PREDICT_LANG_ESSA,
+                PREDICT_LANG_ENUK,
+                PREDICT_LANG_DE,
+                PREDICT_LANG_FREU,
+                PREDICT_LANG_ESEU,
+                PREDICT_LANG_IT,
+                PREDICT_LANG_NL,
+                PREDICT_LANG_ZH,
+                PREDICT_LANG_KO_ROMA,  // Romaji
+                PREDICT_LANG_KO_SYLL,  // Syllabary (Katakana/Hiragana)
+            };
+
+            WithZi(u16 maxLen) : Decolated(maxLen) {}
+
+            virtual void init() {}                                     // 0x0D0
+            virtual void setInputting(wchar_t ch) {}                   // 0x0D4
+            virtual s32 getCurrentNumPredicted() { return 0; }         // 0x0D8
+            virtual void getPredicted(int idx, wchar_t* out) {}        // 0x0DC
+            virtual bool isFix() { return true; }                      // 0x0E0
+            virtual wchar_t* getCurrentSelected() { return NULL; }     // 0x0E4
+            virtual void changeLetterMode(LetterMode mode) {}          // 0x0E8
+            virtual void setPredictLaunguage(PredictLanguage lang) {}  // 0x0EC
+            virtual void setSelectedCandidate(s32 idx) {}              // 0x0F0
+            virtual u16 getInputStringLength() { return 0; }           // 0x0F4
+            virtual void ChangeDictionaryLanguage(u8 newLang) {}       // 0x0F8
+            virtual void setCellPhoneHoldingkey(void* key) {}          // 0x0FC
+
+            virtual void pushBack(wchar_t ch) override {}
+            virtual void popBack() override {}
+            virtual void inputChar(wchar_t ch) override {}
+            virtual void backSpace() override {}
+            virtual void confirm(const wchar_t* string) override {}
+            virtual bool moveCursorRight() override { return false; }
+            virtual bool moveCursorLeft() override { return false; }
+            virtual void EnableKSXFilter(bool) override {}
+
+            void clearCandidates() {}
+            void update() {}
+            s32 getCurrentInput(wchar_t* out, u32 outLen) { return NULL; }
+            const wchar_t* getCurrentInput();
+            void partialConfirmForKR() {}
+
+            void openDictionary(void* ziDict, void* ziOemDict);
+
+            s32 complementsCandidates_(s32);
+
+            void setCurrentWord(const wchar_t* word) {}
+
+            s32 getSelectedCandidate() const { return -1; }
+        };
+#else
         class WithZi : public Decolated {
         public:
             enum LetterMode {
@@ -126,6 +189,7 @@ namespace textinput {
             u32 getCandidates();
             u32 copyWordExtensionToWord();
         };
+#endif
     }  // namespace tistring
 }  // namespace textinput
 
