@@ -4,6 +4,7 @@
 #include "keyboard/tiSignWindow.h"
 
 #include "keyboard/tiCellPhone.h"
+#include "keyboard/tiPcKeyboard.h"
 
 #include <revolution/sc.h>
 
@@ -343,11 +344,8 @@ namespace textinput {
     }
 
     keyboard::pctype::LayoutByNW4R* Manager::createPCTypeKeyboard() {
-        // TODO
-        // return new (MEMAllocFromAllocator(mpAllocator, sizeof(keyboard::pctype::LayoutByNW4R))) keyboard::pctype::LayoutByNW4R();
-
-        return (keyboard::pctype::LayoutByNW4R*)new (MEMAllocFromAllocator(mpAllocator, sizeof(candidatebox::Sample)))
-            candidatebox::Sample(this, mpMultiArcResourceAccessor, "fs_VK_ascii_keytop_a.brlyt", mpEventObserver);
+        return new (MEMAllocFromAllocator(mpAllocator, sizeof(keyboard::pctype::Sample)))
+            keyboard::pctype::Sample(this, mpMultiArcResourceAccessor, "fs_VK_ascii_keytop_a.brlyt", mpEventObserver);
     }
     keyboard::cellphonetype::LayoutByNW4R* Manager::createCellPhoneTypeKeyboard() {
         return new (MEMAllocFromAllocator(mpAllocator, sizeof(keyboard::cellphonetype::Sample)))

@@ -85,6 +85,7 @@ namespace textinput {
 
                 class KeyState {
                 public:
+                    KeyState(Base* kb) : mABCFlags(0), unk_0x04(0), mAIUFlags(0), meLanguage(USA), mpLangDepData(NULL), mpKeyboard(kb) {}
                     enum InternalABCInputMode {
                         IM_ABC_DIRECT = 0,
                         IM_ABC_HIRAGANA,
@@ -277,6 +278,7 @@ namespace textinput {
                     static const u32 MODFLAG_CAPS = 0x40;
                 };
 
+                Base(Manager* manager) : mKeyState(this), mbIsOnlyQwerty(false), mpAllocator(NULL), mpManager(manager) {}
                 virtual ~Base();                                                                         // 0x08
                 virtual void create(MEMAllocator* allocator) override;                                   // 0x0C
                 virtual void init() override;                                                            // 0x10
@@ -416,6 +418,10 @@ namespace textinput {
             // TODO
             class LayoutByNW4R : public Base, public nw4rmanager::Layout, public UIObj::Listener {
             public:
+                LayoutByNW4R(Manager* manager, nw4r::lyt::MultiArcResourceAccessor* resAccessor, const char* layoutBinName, EventObserver* event)
+                    : Base(manager), nw4rmanager::Layout(resAccessor, layoutBinName, event), mpEventHandler(NULL), mShiftButton(1, this, this),
+                      mCapsButton(0, this, this), mModePanel(2, this, this) {}
+
                 virtual ~LayoutByNW4R() override;                                                                               // 0x008
                 virtual void create(MEMAllocator* allocator) override;                                                          // 0x00C
                 virtual void init() override;                                                                                   // 0x010
@@ -522,6 +528,12 @@ namespace textinput {
                     meKeyType = KEY_TYPE_ONOFF;
                 }
                 virtual void onAnmEvent(AnmPaneEvent paneEvent) override;  // 0x10
+            };
+
+            class Sample : public LayoutByNW4R {
+            public:
+                Sample(Manager* manager, nw4r::lyt::MultiArcResourceAccessor* resAccessor, const char* layoutBinName, EventObserver* event)
+                    : LayoutByNW4R(manager, resAccessor, layoutBinName, event) {}
             };
         }  // namespace pctype
     }  // namespace keyboard
