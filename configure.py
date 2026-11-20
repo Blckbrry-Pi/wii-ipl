@@ -937,7 +937,7 @@ config.libs = [
             Object(Equivalent,  "keyboard/tiHwKeyboard.cpp", extra_cflags=["-O4,p"]),
             Object(Matching,    "keyboard/tiLayout.cpp", extra_cflags=["-O4,p"]),
             Object(Matching,    "keyboard/tiLayoutGather.cpp", extra_cflags=["-O4,p"]),
-            Object(NonMatching, "keyboard/tiKoreanInput.cpp", extra_cflags=["-O4,p"]),  # for 4.3K
+            Object(Matching,    "keyboard/tiKoreanInput.cpp", extra_cflags=["-O4,p", "-enc UTF8"], shift_jis=False),  # for 4.3K
         ]
     ),
     IPLSection("channelScript", [

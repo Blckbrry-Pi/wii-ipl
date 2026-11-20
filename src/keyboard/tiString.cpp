@@ -156,13 +156,12 @@ namespace textinput {
                 u32 len = 0;
                 if (converted == ch) {
                     mHangulStream.Flush();
-                    wchar_t translatedJamo = mHangulStream.Get();
 
-                    string[len] = translatedJamo;
-                    if (translatedJamo != L'\0')
+                    u16 translatedKana = string[len] = mHangulStream.Get();
+                    if (translatedKana != L'\0')
                         len++;
 
-                    if (ch != L'\n' || translatedJamo == L'\0') {
+                    if (ch != L'\n' || translatedKana == L'\0') {
                         string[len++] = ch;
                     }
                     string[len] = L'\0';
@@ -172,10 +171,8 @@ namespace textinput {
                 } else {
                     mHangulStream.Put(converted);
 
-                    wchar_t translatedJamo = mHangulStream.Get();
-
-                    string[len] = translatedJamo;
-                    if (translatedJamo != L'\0')
+                    u16 translatedKana = string[len] = mHangulStream.Get();
+                    if (translatedKana != L'\0')
                         len++;
                     string[len] = L'\0';
 
